@@ -145,7 +145,7 @@ python manage.py runserver
 
 ---
 
-## Этап 3. Перенос frontend в Django templates
+## Этап 3. Перенос frontend в Django templates (ВЫПОЛНЕНО)
 
 ### Что делаем
 
