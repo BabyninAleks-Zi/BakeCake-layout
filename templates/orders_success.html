@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Заказ оформлен{% endblock %}
+
+{% block content %}
+<div class="container mt-header mb-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 text-center">
+            <h1 class="font_Gogh fs_40 cake_blue">Заказ оформлен</h1>
+            <p class="cake_grey mt-3">Спасибо, мы получили ваш заказ.</p>
+            <p class="cake_grey">Номер заказа: <span class="cake_pink">#{{ order.id }}</span></p>
+            <a href="{% url 'core:index' %}" class="btn text-white rounded-pill mt-3 px-5 shadow-none cake__button cake__bg_pink">
+                Вернуться на главную
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

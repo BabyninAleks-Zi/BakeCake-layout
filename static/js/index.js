@@ -1,3 +1,5 @@
+const builderData = window.BUILDER_DATA || {}
+
 const builderApp = Vue.createApp({
     name: "App",
     components: {
@@ -96,28 +98,34 @@ const builderApp = Vue.createApp({
                         return true;
                     }
                     return ' время доставки';
+                },
+                personal_data_consent: (value) => {
+                    if (value) {
+                        return true;
+                    }
+                    return ' согласие на обработку данных';
                 }
             },
-            DATA: {
-                Levels: ['не выбрано', '1', '2', '3'],
-                Forms: ['не выбрано', 'Круг', 'Квадрат', 'Прямоугольник'],
-                Toppings: ['не выбрано', 'Без', 'Белый соус', 'Карамельный', 'Кленовый', 'Черничный', 'Молочный шоколад', 'Клубничный'],
-                Berries: ['нет', 'Ежевика', 'Малина', 'Голубика', 'Клубника'],
-                Decors: [ 'нет', 'Фисташки', 'Безе', 'Фундук', 'Пекан', 'Маршмеллоу', 'Марципан']
+            DATA: builderData.labels || {
+                Levels: {},
+                Forms: {},
+                Toppings: {},
+                Berries: {},
+                Decors: {}
             },
-            Costs: {
-                Levels: [0, 400, 750, 1100],
-                Forms: [0, 600, 400, 1000],
-                Toppings: [0, 0, 200, 180, 200, 300, 350, 200],
-                Berries: [0, 400, 300, 450, 500],
-                Decors: [0, 300, 400, 350, 300, 200, 280],
+            Costs: builderData.costs || {
+                Levels: {},
+                Forms: {},
+                Toppings: {},
+                Berries: {},
+                Decors: {},
                 Words: 500
             },
-            Levels: 0,
-            Form: 0,
-            Topping: 0,
-            Berries: 0,
-            Decor: 0,
+            Levels: '',
+            Form: '',
+            Topping: '',
+            Berries: '',
+            Decor: '',
             Words: '',
             Comments: '',
             Designed: false,
@@ -128,21 +136,38 @@ const builderApp = Vue.createApp({
             Address: null,
             Dates: null,
             Time: null,
-            DelivComments: ''
+            DelivComments: '',
+            PersonalDataConsent: false
         }
     },
     methods: {
         ToStep4() {
             this.Designed = true
             setTimeout(() => this.$refs.ToStep4.click(), 0);
+        },
+        getOptionPrice(groupName, optionId) {
+            const group = this.Costs[groupName] || {}
+            const key = String(optionId || '')
+            const price = group[key]
+
+            if (price === undefined || price === null || price === '') {
+                return 0
+            }
+
+            const normalizedPrice = Number(price)
+            return Number.isNaN(normalizedPrice) ? 0 : normalizedPrice
         }
     },
     computed: {
         Cost() {
-            let W = this.Words ? this.Costs.Words : 0
-            return this.Costs.Levels[this.Levels] + this.Costs.Forms[this.Form] +
-                this.Costs.Toppings[this.Topping] + this.Costs.Berries[this.Berries] +
-                this.Costs.Decors[this.Decor] + W
+            let inscriptionPrice = this.Words ? this.Costs.Words : 0
+
+            return this.getOptionPrice('Levels', this.Levels) +
+                this.getOptionPrice('Forms', this.Form) +
+                this.getOptionPrice('Toppings', this.Topping) +
+                this.getOptionPrice('Berries', this.Berries) +
+                this.getOptionPrice('Decors', this.Decor) +
+                Number(inscriptionPrice)
         }
     }
 })

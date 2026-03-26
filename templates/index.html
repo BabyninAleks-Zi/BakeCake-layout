@@ -94,65 +94,65 @@
 				</div>
 				<div class="d-flex align-items-center flex-wrap mb-3">
 					<span class="me-3 fs_40 cake_blue">Количество уровней</span>
-					<v-field v-model="Levels" type="radio" name="lvls" id="num1" value="1" class="d-none cake__input"></v-field>
+					<v-field v-model="Levels" type="radio" name="lvls" id="num1" value="{{ builder_values.level_1 }}" class="d-none cake__input"></v-field>
 					<label for="num1" class="mx-2 px-3 py-1 cake_grey cake__label">1</label>
-					<v-field v-model="Levels" type="radio" name="lvls" id="num2" value="2" class="d-none cake__input"></v-field>
+					<v-field v-model="Levels" type="radio" name="lvls" id="num2" value="{{ builder_values.level_2 }}" class="d-none cake__input"></v-field>
 					<label for="num2" class="mx-2 px-3 py-1 cake_grey cake__label">2</label>
-					<v-field v-model="Levels" type="radio" name="lvls" id="num3" value="3" class="d-none cake__input"></v-field>
+					<v-field v-model="Levels" type="radio" name="lvls" id="num3" value="{{ builder_values.level_3 }}" class="d-none cake__input"></v-field>
 					<label for="num3" class="mx-2 px-3 py-1 cake_grey cake__label">3</label>
 				</div>
 
 				<div class="d-flex align-items-center flex-wrap mb-3">
 					<span class="me-3 fs_40 cake_blue">Форма</span>
-					<v-field v-model="Form" type="radio" name="form" id="form1" value="1" class="d-none cake__input"></v-field>
+					<v-field v-model="Form" type="radio" name="form" id="form1" value="{{ builder_values.shape_round }}" class="d-none cake__input"></v-field>
 					<label for="form1" class="mx-2 px-3 py-1 cake_grey cake__label">Круг</label>
-					<v-field v-model="Form" type="radio" name="form" id="form2" value="2" class="d-none cake__input"></v-field>
+					<v-field v-model="Form" type="radio" name="form" id="form2" value="{{ builder_values.shape_square }}" class="d-none cake__input"></v-field>
 					<label for="form2" class="mx-2 px-3 py-1 cake_grey cake__label">Квадрат</label>
-					<v-field v-model="Form" type="radio" name="form" id="form3" value="3" class="d-none cake__input"></v-field>
+					<v-field v-model="Form" type="radio" name="form" id="form3" value="{{ builder_values.shape_rectangle }}" class="d-none cake__input"></v-field>
 					<label for="form3" class="mx-2 px-3 py-1 cake_grey cake__label">Прямоугольник</label>
 				</div>
 				<div class="d-flex align-items-center flex-wrap mb-3">
 					<span class="me-3 fs_40 cake_blue">Топпинг</span>
-					<v-field v-model="Topping" type="radio" name="topping" id="topping1" value="1" class="d-none cake__input"></v-field>
+					<v-field v-model="Topping" type="radio" name="topping" id="topping1" value="{{ builder_values.topping_none }}" class="d-none cake__input"></v-field>
 					<label for="topping1" class="mx-2 px-3 py-1 cake_grey cake__label">Без</label>
-					<v-field v-model="Topping" type="radio" name="topping" id="topping2" value="2" class="d-none cake__input"></v-field>
+					<v-field v-model="Topping" type="radio" name="topping" id="topping2" value="{{ builder_values.topping_white }}" class="d-none cake__input"></v-field>
 					<label for="topping2" class="mx-2 px-3 py-1 cake_grey cake__label">Белый соус</label>
-					<v-field v-model="Topping" type="radio" name="topping" id="topping3" value="3" class="d-none cake__input"></v-field>
+					<v-field v-model="Topping" type="radio" name="topping" id="topping3" value="{{ builder_values.topping_caramel }}" class="d-none cake__input"></v-field>
 					<label for="topping3" class="mx-2 px-3 py-1 cake_grey cake__label">Карамельный</label>
-					<v-field v-model="Topping" type="radio" name="topping" id="topping4" value="4" class="d-none cake__input"></v-field>
+					<v-field v-model="Topping" type="radio" name="topping" id="topping4" value="{{ builder_values.topping_maple }}" class="d-none cake__input"></v-field>
 					<label for="topping4" class="mx-2 px-3 py-1 cake_grey cake__label">Кленовый</label>
-					<v-field v-model="Topping" type="radio" name="topping" id="topping5" value="5" class="d-none cake__input"></v-field>
+					<v-field v-model="Topping" type="radio" name="topping" id="topping5" value="{{ builder_values.topping_blueberry }}" class="d-none cake__input"></v-field>
 					<label for="topping5" class="mx-2 px-3 py-1 cake_grey cake__label">Черничный</label>
-					<v-field v-model="Topping" type="radio" name="topping" id="topping6" value="6" class="d-none cake__input"></v-field>
+					<v-field v-model="Topping" type="radio" name="topping" id="topping6" value="{{ builder_values.topping_milk }}" class="d-none cake__input"></v-field>
 					<label for="topping6" class="mx-2 px-3 py-1 cake_grey cake__label">Молочный шоколад</label>
-					<v-field v-model="Topping" type="radio" name="topping" id="topping7" value="7" class="d-none cake__input"></v-field>
+					<v-field v-model="Topping" type="radio" name="topping" id="topping7" value="{{ builder_values.topping_strawberry }}" class="d-none cake__input"></v-field>
 					<label for="topping7" class="mx-2 px-3 py-1 cake_grey cake__label">Клубничный</label>
 				</div>
 				<h1 class="me-3 fs_40 cake_pink mb-3 mt-5">Дополнительно</h1>
 				<div class="d-flex align-items-center flex-wrap mb-3">
 					<span class="me-3 fs_40 cake_blue">Ягоды</span>
-					<v-field v-model="Berries" type="radio" name="berries" id="berries1" value="1" class="d-none cake__input"></v-field>
+					<v-field v-model="Berries" type="radio" name="berries" id="berries1" value="{{ builder_values.berry_blackberry }}" class="d-none cake__input"></v-field>
 					<label for="berries1" class="mx-2 px-3 py-1 cake_grey cake__label">Ежевика</label>
-					<v-field v-model="Berries" type="radio" name="berries" id="berries2" value="2" class="d-none cake__input"></v-field>
+					<v-field v-model="Berries" type="radio" name="berries" id="berries2" value="{{ builder_values.berry_raspberry }}" class="d-none cake__input"></v-field>
 					<label for="berries2" class="mx-2 px-3 py-1 cake_grey cake__label">Малина</label>
-					<v-field v-model="Berries" type="radio" name="berries" id="berries3" value="3" class="d-none cake__input"></v-field>
+					<v-field v-model="Berries" type="radio" name="berries" id="berries3" value="{{ builder_values.berry_blueberry }}" class="d-none cake__input"></v-field>
 					<label for="berries3" class="mx-2 px-3 py-1 cake_grey cake__label">Голубика</label>
-					<v-field v-model="Berries" type="radio" name="berries" id="berries4" value="4" class="d-none cake__input"></v-field>
+					<v-field v-model="Berries" type="radio" name="berries" id="berries4" value="{{ builder_values.berry_strawberry }}" class="d-none cake__input"></v-field>
 					<label for="berries4" class="mx-2 px-3 py-1 cake_grey cake__label">Клубника</label>
 				</div>
 				<div class="d-flex align-items-center flex-wrap mb-3">
 					<span class="me-3 fs_40 cake_blue">Декор</span>
-					<v-field v-model="Decor" type="radio" name="decor" id="decor1" value="1" class="d-none cake__input"></v-field>
+					<v-field v-model="Decor" type="radio" name="decor" id="decor1" value="{{ builder_values.decor_pistachio }}" class="d-none cake__input"></v-field>
 					<label for="decor1" class="mx-2 px-3 py-1 cake_grey cake__label">Фисташки</label>
-					<v-field v-model="Decor" type="radio" name="decor" id="decor2" value="2" class="d-none cake__input"></v-field>
+					<v-field v-model="Decor" type="radio" name="decor" id="decor2" value="{{ builder_values.decor_meringue }}" class="d-none cake__input"></v-field>
 					<label for="decor2" class="mx-2 px-3 py-1 cake_grey cake__label">Безе</label>
-					<v-field v-model="Decor" type="radio" name="decor" id="decor3" value="3" class="d-none cake__input"></v-field>
+					<v-field v-model="Decor" type="radio" name="decor" id="decor3" value="{{ builder_values.decor_hazelnut }}" class="d-none cake__input"></v-field>
 					<label for="decor3" class="mx-2 px-3 py-1 cake_grey cake__label">Фундук</label>
-					<v-field v-model="Decor" type="radio" name="decor" id="decor4" value="4" class="d-none cake__input"></v-field>
+					<v-field v-model="Decor" type="radio" name="decor" id="decor4" value="{{ builder_values.decor_pecan }}" class="d-none cake__input"></v-field>
 					<label for="decor4" class="mx-2 px-3 py-1 cake_grey cake__label">Пекан</label>
-					<v-field v-model="Decor" type="radio" name="decor" id="decor5" value="5" class="d-none cake__input"></v-field>
+					<v-field v-model="Decor" type="radio" name="decor" id="decor5" value="{{ builder_values.decor_marshmallow }}" class="d-none cake__input"></v-field>
 					<label for="decor5" class="mx-2 px-3 py-1 cake_grey cake__label">Маршмеллоу</label>
-					<v-field v-model="Decor" type="radio" name="decor" id="decor6" value="6" class="d-none cake__input"></v-field>
+					<v-field v-model="Decor" type="radio" name="decor" id="decor6" value="{{ builder_values.decor_marzipan }}" class="d-none cake__input"></v-field>
 					<label for="decor6" class="mx-2 px-3 py-1 cake_grey cake__label">Марципан</label>
 				</div>
 				<div class="row mb-3">
@@ -175,45 +175,24 @@
 		</section>
 
 		<section class="row pt-header" id="step4" v-if="Designed">
-			<form class="d-none">
-				<input v-model="Levels" value="1" type="radio" name="LEVELS">
-				<input v-model="Levels" value="2" type="radio" name="LEVELS">
-				<input v-model="Levels" value="3" type="radio" name="LEVELS">
-				<br>
-				<input v-model="Form" value="1" type="radio" name="FORM">
-				<input v-model="Form" value="2" type="radio" name="FORM">
-				<input v-model="Form" value="3" type="radio" name="FORM">
-				<br>
-				<input v-model="Topping" value="1" type="radio" name="TOPPING">
-				<input v-model="Topping" value="2" type="radio" name="TOPPING">
-				<input v-model="Topping" value="3" type="radio" name="TOPPING">
-				<input v-model="Topping" value="4" type="radio" name="TOPPING">
-				<input v-model="Topping" value="5" type="radio" name="TOPPING">
-				<input v-model="Topping" value="6" type="radio" name="TOPPING">
-				<input v-model="Topping" value="7" type="radio" name="TOPPING">
-				<br>
-				<input v-model="Berries" value="1" type="radio" name="BERRIES">
-				<input v-model="Berries" value="2" type="radio" name="BERRIES">
-				<input v-model="Berries" value="3" type="radio" name="BERRIES">
-				<input v-model="Berries" value="4" type="radio" name="BERRIES">
-				<br>
-				<input v-model="Decor" value="1" type="radio" name="DECOR">
-				<input v-model="Decor" value="2" type="radio" name="DECOR">
-				<input v-model="Decor" value="3" type="radio" name="DECOR">
-				<input v-model="Decor" value="4" type="radio" name="DECOR">
-				<input v-model="Decor" value="5" type="radio" name="DECOR">
-				<input v-model="Decor" value="6" type="radio" name="DECOR">
-				<br>
-				<input v-model="Words" type="text" name="WORDS">
-				<input v-model="Comments" type="text" name="COMMENTS">
+			<form class="d-none" method="post" action="{% url 'orders:create' %}">
+				{% csrf_token %}
+				<input :value="Levels || ''" type="hidden" name="level">
+				<input :value="Form || ''" type="hidden" name="shape">
+				<input :value="Topping || ''" type="hidden" name="topping">
+				<input :value="Berries || ''" type="hidden" name="berry">
+				<input :value="Decor || ''" type="hidden" name="decor">
+				<input v-model="Words" type="text" name="inscription">
+				<input v-model="Comments" type="text" name="order_comment">
 
-				<input v-model="Name" type="text" name="NAME">
-				<input v-model="Phone" type="tel" name="PHONE">
-				<input v-model="Email" type="email" name="EMAIL">
-				<input v-model="Address" type="text" name="ADDRESS">
-				<input v-model="Dates" type="date" name="DATE">
-				<input v-model="Time" type="time" name="TIME">
-				<input v-model="DelivComments" type="text" name="DELIVCOMMENTS">
+				<input v-model="Name" type="text" name="customer_name">
+				<input v-model="Phone" type="tel" name="customer_phone">
+				<input v-model="Email" type="email" name="customer_email">
+				<input v-model="Address" type="text" name="delivery_address">
+				<input v-model="Dates" type="date" name="delivery_date">
+				<input v-model="Time" type="time" name="delivery_time">
+				<input v-model="DelivComments" type="text" name="delivery_comment">
+				<input :value="PersonalDataConsent ? 'on' : ''" type="hidden" name="personal_data_consent">
 				<button type="submit" ref="HiddenFormSubmit">Submit Order</button>
 			</form>
 			<v-form :validation-schema="schema2" @submit="this.$refs.HiddenFormSubmit.click()">
@@ -252,13 +231,13 @@
 						<div class="col-12 col-lg-4 d-flex justify-content-center justify-content-lg-end">
 							<div class="cake__card p-4 position-relative cake_grey">
 								<span class="cake__badge rounded-pill">?</span>
-								<span>Количество уровней: [[ DATA.Levels[Levels] ]]</span>
-								<span>Форма уровней: [[ DATA.Forms[Form] ]]</span>
-								<p>Топинг: [[ DATA.Toppings[Topping] ]]</p>
+								<span>Количество уровней: [[ DATA.Levels[Levels] || 'не выбрано' ]]</span>
+								<span>Форма уровней: [[ DATA.Forms[Form] || 'не выбрано' ]]</span>
+								<p>Топинг: [[ DATA.Toppings[Topping] || 'не выбрано' ]]</p>
 								<span>Дополнительно:</span>
 								<ul>
-									<li>Ягоды: [[ DATA.Berries[Berries] ]]</li>
-									<li>Декор: [[ DATA.Decors[Decor] ]]</li>
+									<li>Ягоды: [[ DATA.Berries[Berries] || 'нет' ]]</li>
+									<li>Декор: [[ DATA.Decors[Decor] || 'нет' ]]</li>
 								</ul>
 								<span>[[ Words === '' ? 'Без надписи' : Words ]]</span>
 							</div>
@@ -289,6 +268,13 @@
 						<div class="col-12 col-md-6">
 							<label for="deliv-comment" class="cake_blue">Комментарий для курьера</label>
 							<textarea v-model="DelivComments" :class="DelivComments ? 'cake__border_blue': ''" id="deliv-comment" class="form-control cake__textinput mt-3" rows="2" style="resize: none"></textarea>
+							<div class="form-check mt-3">
+								<v-field v-model="PersonalDataConsent" type="checkbox" name="personal_data_consent" id="personal_data_consent" class="form-check-input"></v-field>
+								<label for="personal_data_consent" class="form-check-label cake_grey ms-2">
+									Согласен на обработку персональных данных
+								</label>
+							</div>
+							<error-message name="personal_data_consent" class="cake_pink fs_12"></error-message>
 						</div>
 						<div class="col-12 col-md-6 d-flex flex-column align-items-center align-items-md-end mt-3 mt-md-0">
 							<div class="d-flex">
@@ -305,6 +291,9 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script>
+	window.BUILDER_DATA = {{ builder_data_json|safe }};
+</script>
 <script src="{% static 'js/index.js' %}"></script>
 <script src="{% static 'js/registration.js' %}"></script>
 {% endblock %}

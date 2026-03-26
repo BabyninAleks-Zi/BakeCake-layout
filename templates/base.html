@@ -64,6 +64,15 @@
 {% endblock %}
 
 <main>
+	{% if messages %}
+	<div class="container mt-header pt-3">
+		{% for message in messages %}
+		<div class="alert alert-warning" role="alert">
+			{{ message }}
+		</div>
+		{% endfor %}
+	</div>
+	{% endif %}
 	{% block content %}{% endblock %}
 </main>
 
