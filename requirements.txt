@@ -1,3 +1,4 @@
 Django==5.2.12
 Pillow==12.1.1
 phonenumberslite==9.0.25
+yookassa==3.10.0

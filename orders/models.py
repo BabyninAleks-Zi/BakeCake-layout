@@ -119,6 +119,32 @@ class Order(models.Model):
         default=Status.NEW,
         verbose_name="Статус",
     )
+    payment_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name="ID платежа в YooKassa",
+    )
+    payment_status = models.CharField(
+        max_length=50,
+        blank=True,
+        default="",
+        verbose_name="Статус оплаты YooKassa",
+    )
+    is_paid = models.BooleanField(
+        default=False,
+        verbose_name="Оплачено",
+    )
+    paid_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Дата оплаты",
+    )
+    confirmation_url = models.URLField(
+        blank=True,
+        null=True,
+        verbose_name="Ссылка на оплату",
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Создан",
