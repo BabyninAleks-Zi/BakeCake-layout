@@ -1,13 +1,17 @@
 from pathlib import Path
+from environs import Env
+
+env = Env()
+env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ou=%f80da^%8eb-258_l05tzam89vv86%rru81ce)ou+!btzma'
+SECRET_KEY = env.str('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', True)
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
@@ -95,3 +99,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGOUT_REDIRECT_URL = 'core:index'
 
 LOGIN_URL = 'accounts:lk'
+
+# YooKassa settings
+YOOKASSA_SHOP_ID = env.str('YOOKASSA_SHOP_ID')
+YOOKASSA_SECRET_KEY = env.str('YOOKASSA_SECRET_KEY')
+YOOKASSA_RETURN_URL = env.str('YOOKASSA_RETURN_URL')
