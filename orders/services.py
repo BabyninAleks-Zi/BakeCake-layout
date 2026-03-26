@@ -1,7 +1,10 @@
 from __future__ import annotations
+import uuid
 from datetime import datetime, timedelta
 from django.utils import timezone
+from django.conf import settings
 from catalog.models import CakeOption
+from .models import Order
 
 
 INSCRIPTION_PRICE = 500
@@ -14,6 +17,10 @@ REQUIRED_KINDS = (
 
 
 class PricingError(ValueError):
+    pass
+
+
+class PaymentError(ValueError):
     pass
 
 
@@ -112,3 +119,87 @@ def build_delivery_datetime(delivery_date, delivery_time):
         return timezone.make_aware(combined, timezone.get_current_timezone())
 
     return timezone.localtime(combined)
+
+
+def create_payment(order: Order) -> dict:
+    """Создаёт платёж в YooKassa для заказа."""
+    from yookassa import Configuration, Payment
+
+    if not order.total_price:
+        raise PaymentError("Сумма заказа не указана")
+
+    Configuration.account_id = settings.YOOKASSA_SHOP_ID
+    Configuration.secret_key = settings.YOOKASSA_SECRET_KEY
+
+    description = f"Оплата заказа №{order.id} от {order.customer_name}"
+    idempotence_key = f"order_{order.id}_{uuid.uuid4().hex[:16]}"
+
+    payment_data = {
+        "amount": {
+            "value": str(order.total_price),
+            "currency": "RUB",
+        },
+        "capture": True,
+        "description": description,
+        "confirmation": {
+            "type": "redirect",
+            "return_url": settings.YOOKASSA_RETURN_URL,
+        },
+        "metadata": {
+            "order_id": order.id,
+        },
+    }
+
+    try:
+        payment = Payment.create(payment_data, idempotency_key=idempotence_key)
+    except TypeError:
+        payment = Payment.create(payment_data)
+    except Exception as exc:
+        raise PaymentError(f"Ошибка создания платежа: {exc}") from exc
+
+    order.payment_id = payment.id
+    order.payment_status = payment.status
+    order.confirmation_url = payment.confirmation.confirmation_url
+    order.save(update_fields=["payment_id", "payment_status", "confirmation_url"])
+
+    return {
+        "payment_id": payment.id,
+        "confirmation_url": payment.confirmation.confirmation_url,
+        "status": payment.status,
+    }
+
+
+def get_payment_info(payment_id: str) -> dict:
+    """Получает информацию о платеже из YooKassa."""
+    from yookassa import Configuration, Payment
+
+    Configuration.account_id = settings.YOOKASSA_SHOP_ID
+    Configuration.secret_key = settings.YOOKASSA_SECRET_KEY
+
+    try:
+        payment = Payment.find_one(payment_id)
+    except Exception as exc:
+        raise PaymentError(f"Ошибка получения платежа: {exc}") from exc
+
+    if not payment:
+        raise PaymentError("Платёж не найден")
+
+    return {
+        "id": payment.id,
+        "status": payment.status,
+        "paid": payment.paid,
+        "amount": payment.amount.value if payment.amount else None,
+    }
+
+
+def update_order_from_payment(order: Order, payment_info: dict) -> None:
+    """Обновляет заказ на основе информации о платеже."""
+    order.payment_status = payment_info.get("status", "")
+
+    paid_statuses = ("succeeded", "waiting_for_capture")
+    order.is_paid = payment_info.get("paid", False) or order.payment_status in paid_statuses
+
+    if order.is_paid and not order.paid_at:
+        order.paid_at = timezone.now()
+
+    order.save(update_fields=["payment_status", "is_paid", "paid_at"])

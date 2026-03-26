@@ -175,27 +175,26 @@
 		</section>
 
 		<section class="row pt-header" id="step4" v-if="Designed">
-			<form class="d-none" method="post" action="{% url 'orders:create' %}">
+			<form id="order-form" class="d-none" method="post" action="{% url 'orders:create' %}">
 				{% csrf_token %}
 				<input :value="Levels || ''" type="hidden" name="level">
 				<input :value="Form || ''" type="hidden" name="shape">
 				<input :value="Topping || ''" type="hidden" name="topping">
 				<input :value="Berries || ''" type="hidden" name="berry">
 				<input :value="Decor || ''" type="hidden" name="decor">
-				<input v-model="Words" type="text" name="inscription">
-				<input v-model="Comments" type="text" name="order_comment">
+				<input v-model="Words" type="hidden" name="inscription">
+				<input v-model="Comments" type="hidden" name="order_comment">
 
-				<input v-model="Name" type="text" name="customer_name">
-				<input v-model="Phone" type="tel" name="customer_phone">
-				<input v-model="Email" type="email" name="customer_email">
-				<input v-model="Address" type="text" name="delivery_address">
-				<input v-model="Dates" type="date" name="delivery_date">
-				<input v-model="Time" type="time" name="delivery_time">
-				<input v-model="DelivComments" type="text" name="delivery_comment">
-				<input :value="PersonalDataConsent ? 'on' : ''" type="hidden" name="personal_data_consent">
-				<button type="submit" ref="HiddenFormSubmit">Submit Order</button>
+				<input v-model="Name" type="hidden" name="customer_name">
+				<input v-model="Phone" type="hidden" name="customer_phone">
+				<input v-model="Email" type="hidden" name="customer_email">
+				<input v-model="Address" type="hidden" name="delivery_address">
+				<input v-model="Dates" type="hidden" name="delivery_date">
+				<input v-model="Time" type="hidden" name="delivery_time">
+				<input v-model="DelivComments" type="hidden" name="delivery_comment">
+				<input v-if="PersonalDataConsent" value="on" type="hidden" name="personal_data_consent">
 			</form>
-			<v-form :validation-schema="schema2" @submit="this.$refs.HiddenFormSubmit.click()">
+			<v-form :validation-schema="schema2" @submit="submitOrder">
 				<div class="col">
 					<div class="d-flex flex-column position-relative pb-5">
 						<h2 class="fs_40 font_Gogh cake_blue text-center align-self-center">Оформление заказа</h2>
@@ -269,7 +268,7 @@
 							<label for="deliv-comment" class="cake_blue">Комментарий для курьера</label>
 							<textarea v-model="DelivComments" :class="DelivComments ? 'cake__border_blue': ''" id="deliv-comment" class="form-control cake__textinput mt-3" rows="2" style="resize: none"></textarea>
 							<div class="form-check mt-3">
-								<v-field v-model="PersonalDataConsent" type="checkbox" name="personal_data_consent" id="personal_data_consent" class="form-check-input"></v-field>
+								<v-field v-model="PersonalDataConsent" name="personal_data_consent" id="personal_data_consent" class="form-check-input" type="checkbox" :value="true" :unchecked-value="false"></v-field>
 								<label for="personal_data_consent" class="form-check-label cake_grey ms-2">
 									Согласен на обработку персональных данных
 								</label>

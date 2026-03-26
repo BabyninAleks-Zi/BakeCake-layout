@@ -145,6 +145,9 @@ const builderApp = Vue.createApp({
             this.Designed = true
             setTimeout(() => this.$refs.ToStep4.click(), 0);
         },
+        submitOrder() {
+            document.getElementById('order-form').submit()
+        },
         getOptionPrice(groupName, optionId) {
             const group = this.Costs[groupName] || {}
             const key = String(optionId || '')
