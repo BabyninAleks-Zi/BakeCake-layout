@@ -96,3 +96,8 @@ def index(request):
         "builder_data_json": json.dumps(builder_data, ensure_ascii=False),
     }
     return render(request, "index.html", context)
+
+
+def privacy_policy(request):
+    return render(request, 'privacy.html')
+    

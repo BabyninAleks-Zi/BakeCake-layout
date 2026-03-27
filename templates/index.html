@@ -268,11 +268,15 @@
 							<label for="deliv-comment" class="cake_blue">Комментарий для курьера</label>
 							<textarea v-model="DelivComments" :class="DelivComments ? 'cake__border_blue': ''" id="deliv-comment" class="form-control cake__textinput mt-3" rows="2" style="resize: none"></textarea>
 							<div class="form-check mt-3">
-								<v-field v-model="PersonalDataConsent" name="personal_data_consent" id="personal_data_consent" class="form-check-input" type="checkbox" :value="true" :unchecked-value="false"></v-field>
-								<label for="personal_data_consent" class="form-check-label cake_grey ms-2">
-									Согласен на обработку персональных данных
-								</label>
-							</div>
+                                <v-field v-model="PersonalDataConsent" name="personal_data_consent" id="personal_data_consent" class="form-check-input" type="checkbox" :value="true" :unchecked-value="false"></v-field>
+                                <label for="personal_data_consent" class="form-check-label cake_grey ms-2">
+                                    Согласен на 
+                                    <!-- Ссылка открывает модальное окно с ID PrivacyModal -->
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#PrivacyModal" class="cake_pink text-decoration-none">
+                                    обработку персональных данных
+                                    </a>
+                                </label>
+                            </div>
 							<error-message name="personal_data_consent" class="cake_pink fs_12"></error-message>
 						</div>
 						<div class="col-12 col-md-6 d-flex flex-column align-items-center align-items-md-end mt-3 mt-md-0">
@@ -287,7 +291,39 @@
 		</section>
 	</article>
 </div>
+
+<!-- Модальное окно Политики конфиденциальности -->
+<div class="modal fade" id="PrivacyModal" tabindex="-1" aria-labelledby="PrivacyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0">
+        <h5 class="modal-title font_Gogh cake_blue" id="PrivacyModalLabel">Политика конфиденциальности</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body cake_grey fs_14 lh-lg">
+        <p><strong>1. Общие положения</strong></p>
+        <p>Настоящая политика обработки персональных данных составлена в соответствии с требованиями Федерального закона от 27.07.2006. №152-ФЗ «О персональных данных».</p>
+        
+        <p><strong>2. Цели обработки данных</strong></p>
+        <p>Обработка персональных данных Пользователя осуществляется в целях заключения, исполнения и прекращения гражданско-правовых договоров; предоставления доступа Пользователю к сервисам, информации и/или материалам, содержащимся на веб-сайте.</p>
+        
+        <p><strong>3. Какие данные мы собираем</strong></p>
+        <p>Фамилия, имя, отчество, номер телефона, адрес электронной почты, адрес доставки.</p>
+        
+        <p><strong>4. Безопасность</strong></p>
+        <p>Мы принимаем все необходимые меры для защиты ваших данных от несанкционированного доступа, изменения, раскрытия или уничтожения.</p>
+        
+        <p class="mt-3"><em>(Здесь должен быть полный текст вашего юридического документа)</em></p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn cake__button cake__bg_pink text-white rounded-pill" data-bs-dismiss="modal">Понятно</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
+
 
 {% block extra_scripts %}
 <script>
