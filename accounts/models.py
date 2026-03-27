@@ -5,18 +5,27 @@ import random
 
 class Profile(models.Model):
     user = models.OneToOneField(
-    	User,
-    	on_delete=models.CASCADE,
-    	null=True,
-    	blank=True
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='profile'
     )
     phone = models.CharField(
-    	max_length=20,
-    	unique=True,
-    	null=True,
-    	blank=True
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True
     )
-    
+    address = models.CharField(
+        max_length=255,
+        blank=True,
+        default='',
+        verbose_name="Адрес доставки"
+    )
+
+    def __str__(self):
+        return f"Профиль пользователя {self.user.username if self.user else 'Unknown'}"
 
 class SMSCode(models.Model):
     phone = models.CharField(max_length=20)
@@ -30,3 +39,4 @@ class SMSCode(models.Model):
     @staticmethod
     def generate_code():
         return f"{random.randint(100000, 999999)}"
+        

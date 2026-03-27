@@ -42,21 +42,38 @@
 					<small class="fw-lighter text-decoration-none fs_12 cake_blue">8 (495) 000-00-00</small>
 					<small class="fw-lighter text-decoration-none fs_12 cake_blue">Пн - Вс 10:00—20:00</small>
 				</li>
-				<li class="nav-item d-flex align-items-center">
-					<a class="nav-link fw-lighter me-1 cake_blue position-relative" href="#">
-						<img src="{% static 'img/shopping-cart.svg' %}" alt="">
-						<!--метка на иконке, убрать класс d-none чтоб появилась-->
-						<span class="position-absolute translate-middle badge rounded-pill cake__bg_pink fs_8 d-none">1</span>
-					</a>
-					<a class="nav-link fw-lighter me-1 cake_blue position-relative" href="#RegModal" data-bs-toggle="modal">
-						<img src="{% static 'img/user.svg' %}" alt="">
-						<!--метка на иконке, убрать класс d-none чтоб появилась-->
-						<span class="position-absolute translate-middle badge rounded-pill cake__bg_pink fs_8 d-none">1</span>
-					</a>
-					<a class="nav-link fw-lighter cake_grey fs_12 d-none" href="#">
-						Ирина
-					</a>
-				</li>
+                <li class="nav-item d-flex align-items-center">
+                    <!-- Корзина (без изменений) -->
+                    <a class="nav-link fw-lighter me-1 cake_blue position-relative" href="#">
+                        <img src="{% static 'img/shopping-cart.svg' %}" alt="">
+                        <span class="position-absolute translate-middle badge rounded-pill cake__bg_pink fs_8 d-none">1</span>
+                    </a>
+
+                    {% if user.is_authenticated %}
+                    <!-- Если пользователь ВОШЕЛ -->
+    
+                    <!-- Иконка профиля ведет в ЛК -->
+                        <a class="nav-link fw-lighter me-1 cake_blue position-relative" href="{% url 'accounts:lk' %}">
+                            <img src="{% static 'img/user.svg' %}" alt="">
+                            <!-- Метку можно оставить скрытой или показывать кол-во заказов -->
+                            <span class="position-absolute translate-middle badge rounded-pill cake__bg_pink fs_8 d-none">1</span>
+                        </a>
+    
+                        <!-- Отображаем Имя (или номер телефона, если имени нет) -->
+                        <a class="nav-link fw-lighter cake_grey fs_12" href="{% url 'accounts:lk' %}">
+                            {{ user.first_name|default:user.username }}
+                        </a>
+
+                    {% else %}
+                        <!-- Если пользователь НЕ ВОШЕЛ -->
+    
+                        <!-- Кнопка входа открывает модалку -->
+                        <a class="nav-link fw-lighter me-1 cake_blue position-relative" href="#RegModal" data-bs-toggle="modal">
+                            <img src="{% static 'img/user.svg' %}" alt="">
+                            <span class="position-absolute translate-middle badge rounded-pill cake__bg_pink fs_8 d-none">1</span>
+                        </a>
+                    {% endif %}
+                </li>
 			</ul>
 		</div>
 	</nav>

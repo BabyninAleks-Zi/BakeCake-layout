@@ -2,9 +2,8 @@ import json
 import random
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.contrib.auth import login, get_user_model
+from django.contrib.auth import login, logout, get_user_model
 from django.shortcuts import redirect
-from django.contrib.auth import logout
 from django.utils import timezone
 from .models import Profile, SMSCode
 
@@ -85,3 +84,47 @@ def verify_code(request):
 def custom_logout(request):
     logout(request)
     return redirect('core:index')
+
+
+@require_http_methods(["POST"])
+def update_profile(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Пользователь не авторизован'}, status=403)
+
+    try:
+        data = json.loads(request.body)
+        
+        user = request.user
+        profile, created = Profile.objects.get_or_create(user=user)
+
+        # 1. Обновляем стандартные поля модели User
+        if 'first_name' in data:
+            user.first_name = data['first_name'].strip()
+        
+        if 'email' in data:
+            user.email = data['email'].strip()
+
+        # Сохраняем изменения в User
+        user.save()
+
+        # 2. Обновляем кастомные поля модели Profile
+        if 'address' in data:
+            profile.address = data['address'].strip()
+
+        profile.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Данные успешно обновлены',
+            'user': {
+                'first_name': user.first_name,
+                'email': user.email,
+                'phone': profile.phone,
+                'address': profile.address
+            }
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Неверный формат данных'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

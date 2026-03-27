@@ -30,19 +30,38 @@
 					<small class="fw-lighter text-decoration-none fs_12 cake_blue">8 (495) 000-00-00</small>
 					<small class="fw-lighter text-decoration-none fs_12 cake_blue">Пн - Вс 10:00—20:00</small>
 				</li>
-				<li class="nav-item d-flex align-items-center">
-					<a class="nav-link fw-lighter me-1 cake_blue position-relative" href="#">
-						<img src="{% static 'img/shopping-cart.svg' %}" alt="">
-						<span class="position-absolute translate-middle badge rounded-pill cake__bg_pink fs_8">1</span>
-					</a>
-					<a class="nav-link fw-lighter me-1 cake_blue position-relative" href="#">
-						<img src="{% static 'img/user.svg' %}" alt="">
-						<span class="position-absolute translate-middle badge rounded-pill cake__bg_pink fs_8">1</span>
-					</a>
-					<a class="nav-link fw-lighter cake_grey fs_12" href="#">
-						Ирина
-					</a>
-				</li>
+                <li class="nav-item d-flex align-items-center">
+                    <!-- Корзина (без изменений) -->
+                    <a class="nav-link fw-lighter me-1 cake_blue position-relative" href="#">
+                        <img src="{% static 'img/shopping-cart.svg' %}" alt="">
+                        <span class="position-absolute translate-middle badge rounded-pill cake__bg_pink fs_8 d-none">1</span>
+                    </a>
+
+                    {% if user.is_authenticated %}
+                    <!-- Если пользователь ВОШЕЛ -->
+    
+                    <!-- Иконка профиля ведет в ЛК -->
+                        <a class="nav-link fw-lighter me-1 cake_blue position-relative" href="{% url 'accounts:lk' %}">
+                            <img src="{% static 'img/user.svg' %}" alt="">
+                            <!-- Метку можно оставить скрытой или показывать кол-во заказов -->
+                            <span class="position-absolute translate-middle badge rounded-pill cake__bg_pink fs_8 d-none">1</span>
+                        </a>
+    
+                        <!-- Отображаем Имя (или номер телефона, если имени нет) -->
+                        <a class="nav-link fw-lighter cake_grey fs_12" href="{% url 'accounts:lk' %}">
+                            {{ user.first_name|default:user.username }}
+                        </a>
+
+                    {% else %}
+                        <!-- Если пользователь НЕ ВОШЕЛ -->
+    
+                        <!-- Кнопка входа открывает модалку -->
+                        <a class="nav-link fw-lighter me-1 cake_blue position-relative" href="#RegModal" data-bs-toggle="modal">
+                            <img src="{% static 'img/user.svg' %}" alt="">
+                            <span class="position-absolute translate-middle badge rounded-pill cake__bg_pink fs_8 d-none">1</span>
+                        </a>
+                    {% endif %}
+                </li>
 			</ul>
 		</div>
 	</nav>
@@ -55,7 +74,14 @@
 		<div class="col-12 col-xxl-6 d-flex justify-content-center">
 			<div><img src="{% static 'img/Cake2.png' %}" alt=""></div>
 		</div>
-		<div class="col-12 col-xxl-6 d-flex flex-column justify-content-center align-items-center align-items-xxl-start" id="LK">
+		    <div 
+                class="col-12 col-xxl-6 d-flex flex-column justify-content-center align-items-center align-items-xxl-start" 
+                id="LK"
+                data-user-name="{{ user.first_name|escapejs }}"
+                data-user-phone="{{ user.username|escapejs }}" 
+                data-user-email="{{ user.email|escapejs }}"
+                data-user-address="{{ user.profile.address|escapejs }}"
+            >
 			<form class="d-none">
 				<input v-model="Name" name="NAME">
 				<input v-model="Phone" name="PHONE">
@@ -87,6 +113,9 @@
 						<li class="list-group-item border-0 ps-0">
 							<h1 class="fs_40 cake_blue">Почта</h1>
 						</li>
+						<li class="list-group-item border-0 ps-0">
+							<h1 class="fs_40 cake_blue">Адрес</h1>
+						</li>
 					</ul>
 					<ul class="list-group">
 						<li class="list-group-item border-0 py-61 position-relative">
@@ -101,6 +130,11 @@
 							<v-field v-model="Email" type="text" name="email_format" id="email" :readonly="!Edit" class="form-control my-2 cake__textinput"></v-field>
 							<error-message name="email_format" class="position-absolute bottom-0 cake_pink fs_12"></error-message>
 						</li>
+						<!-- После блока с Email добавьте этот блок -->
+                        <li class="list-group-item border-0 py-61 position-relative">
+                            <v-field v-model="Address" type="text" name="address_format" :readonly="!Edit" class="form-control my-2 cake__textinput"></v-field>
+                            <error-message name="address_format" class="position-absolute bottom-0 cake_pink fs_12"></error-message>
+                        </li>
 					</ul>
 				</div>
 			</v-form>
