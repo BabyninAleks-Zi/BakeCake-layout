@@ -74,8 +74,15 @@
 		<div class="col-12 col-xxl-6 d-flex justify-content-center">
 			<div><img src="{% static 'img/Cake2.png' %}" alt=""></div>
 		</div>
-		<div class="col-12 col-xxl-6 d-flex flex-column justify-content-center align-items-center align-items-xxl-start" id="LK">
-			<form class="d-none">
+		    <div 
+                class="col-12 col-xxl-6 d-flex flex-column justify-content-center align-items-center align-items-xxl-start" 
+                id="LK"
+                data-user-name="{{ user.first_name|escapejs }}"
+                data-user-phone="{{ user.username|escapejs }}" 
+                data-user-email="{{ user.email|escapejs }}"
+                data-user-address="{{ user.profile.address|escapejs }}"
+            >
+            <form class="d-none">
 				<input v-model="Name" name="NAME">
 				<input v-model="Phone" name="PHONE">
 				<input v-model="Email" name="EMAIL">
@@ -187,7 +194,9 @@
 				</aside>
 			</section>
 
-			<button class="btn text-white rounded-pill align-self-end px-5 mt-3 shadow-none cake__button cake__bg_pink">Выйти</button>
+			<a href="{% url 'accounts:logout' %}" class="btn text-white rounded-pill align-self-end px-5 mt-3 shadow-none cake_button cake__bg_pink text-decoration-none">
+				Выйти
+			</a>
 		</div>
 	</div>
 </div>
