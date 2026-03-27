@@ -138,11 +138,26 @@
 					</ul>
 				</div>
 			</v-form>
-			<h2 class="fs_40 cake_pink mt-5">Мои заказы</h2>
-			<span class="cake_grey">У вас еще нет заказов.</span>
-			<p class="cake_grey">Вы можете добавить торт из <a href="{% url 'core:index' %}#step2" class="text-decoration-none cake_pink">Каталога</a> или <a href="{% url 'core:index' %}#step3" class="text-decoration-none cake_pink">Создать свой</a>.</p>
-			<span class="cake_grey">Есть вопросы?</span>
-			<span class="cake_grey">Воспользуйтесь нашим <a href="https://vk.com/devmanorg" class="text-decoration-none cake_pink">чат-ботом</a>.</span>
+<!-- Блок "Мои заказы" с кнопкой перехода -->
+<div class="w-100 mt-5">
+  <h2 class="fs_40 cake_pink mb-3">Мои заказы</h2>
+  
+  <!-- Ссылка-кнопка на страницу заказов -->
+  <a href="{% url 'accounts:lk_orders' %}" class="btn text-white rounded-pill px-4 py-2 shadow-none cake__button cake__bg_pink d-inline-flex align-items-center">
+    <span>Перейти к списку заказов</span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-right ms-2" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+    </svg>
+  </a>
+
+  <div class="mt-4">
+    <span class="cake_grey d-block mb-2">Есть вопросы?</span>
+    <span class="cake_grey">
+      Воспользуйтесь нашим 
+      <a href="https://vk.com/devmanorg" class="text-decoration-none cake_pink" target="_blank">чат-ботом</a>.
+    </span>
+  </div>
+</div>
 			<!-- <button class="btn text-white rounded-pill align-self-end px-5 mt-3 shadow-none cake__button cake__bg_pink">Выйти</button> -->
 			<a href="{% url 'accounts:logout' %}" class="btn text-white rounded-pill align-self-end px-5 mt-3 shadow-none cake_button cake__bg_pink text-decoration-none">
 				Выйти

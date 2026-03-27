@@ -3,9 +3,12 @@ import random
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import login, logout, get_user_model
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .models import Profile, SMSCode
+
+from orders.models import Order
 
 
 User = get_user_model()
@@ -128,3 +131,18 @@ def update_profile(request):
         return JsonResponse({'status': 'error', 'message': 'Неверный формат данных'}, status=400)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@login_required
+def orders_view(request):
+    """
+    Страница списка заказов пользователя.
+    """
+    # Получаем все заказы текущего пользователя, сортируем от новых к старым
+    user_orders = Order.objects.filter(customer=request.user).order_by('-created_at')
+    
+    context = {
+        'orders': user_orders,
+    }
+    return render(request, 'lk-order.html', context)
+    
