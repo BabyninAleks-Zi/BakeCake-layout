@@ -161,7 +161,8 @@
 
                   <hr class="my-3">
                   <span class="cake_pink fw-bold fs_18 d-block mb-2">Цена: {{ order.total_price }}₽</span>
-                  <span class="cake_blue d-block mb-2"><strong>Оплата:</strong> {{ order.payment_status|default:"не начата" }}</span>
+                  <span class="cake_blue d-block mb-2"><strong>Оплата:</strong> {{ order.payment_status_text }}</span>
+                  <span class="cake_blue d-block mb-2"><strong>ETA доставки:</strong> {{ order.delivery_eta_text }}</span>
                   
                   <small class="text-muted d-block mb-1">📅 Дата доставки: {{ order.delivery_date|date:"d.m.Y" }}</small>
                   <small class="text-muted d-block mb-1">⏰ Время: {{ order.delivery_time|date:"H:i" }}</small>
@@ -169,7 +170,7 @@
                 </div>
                 <div class="modal-footer d-flex justify-content-between">
                   <span class="cake_blue d-flex align-items-center">
-                    Статус: <strong class="ms-1">{{ order.get_status_display }}</strong>
+                    Статус: <strong class="ms-1">{{ order.status_text }}</strong>
                   </span>
                 </div>
               </div>

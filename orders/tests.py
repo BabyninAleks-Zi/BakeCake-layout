@@ -82,6 +82,58 @@ class PricingServiceTests(TestCase):
             )
 
 
+class OrderModelTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.level = CakeOption.objects.get(kind=CakeOption.Kind.LEVEL, name="1 уровень")
+        cls.shape = CakeOption.objects.get(kind=CakeOption.Kind.SHAPE, name="Квадрат")
+        cls.topping = CakeOption.objects.get(kind=CakeOption.Kind.TOPPING, name="Белый соус")
+
+    def test_returns_readable_payment_status_and_eta(self):
+        order = Order.objects.create(
+            level=self.level,
+            shape=self.shape,
+            topping=self.topping,
+            customer_name="Ирина",
+            customer_phone="+79990000000",
+            customer_email="irina@example.com",
+            delivery_address="Москва, Тверская 1",
+            delivery_date="2026-03-30",
+            delivery_time="12:00",
+            delivery_eta="30.03.2026 с 12:00 до 14:00",
+            personal_data_consent=True,
+            options_total=1200,
+            inscription_price=0,
+            rush_fee=0,
+            total_price=1200,
+            payment_status="pending",
+        )
+
+        self.assertEqual(order.status_text(), "Новый")
+        self.assertEqual(order.payment_status_text(), "Ожидает оплату")
+        self.assertEqual(order.delivery_eta_text(), "30.03.2026 с 12:00 до 14:00")
+
+    def test_builds_default_eta_when_custom_eta_is_empty(self):
+        order = Order.objects.create(
+            level=self.level,
+            shape=self.shape,
+            topping=self.topping,
+            customer_name="Ирина",
+            customer_phone="+79990000000",
+            customer_email="irina@example.com",
+            delivery_address="Москва, Тверская 1",
+            delivery_date="2026-03-30",
+            delivery_time="12:00",
+            personal_data_consent=True,
+            options_total=1200,
+            inscription_price=0,
+            rush_fee=0,
+            total_price=1200,
+        )
+
+        self.assertEqual(order.delivery_eta_text(), "30.03.2026 к 12:00")
+
+
 class OrderCreateViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):

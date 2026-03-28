@@ -1,3 +1,5 @@
+from datetime import date, time
+
 from django.conf import settings
 from django.db import models
 
@@ -12,6 +14,14 @@ class Order(models.Model):
         DELIVERING = "delivering", "В доставке"
         COMPLETED = "completed", "Выполнен"
         CANCELLED = "cancelled", "Отменён"
+
+    PAYMENT_STATUS_LABELS = {
+        "": "Оплата не начата",
+        "pending": "Ожидает оплату",
+        "waiting_for_capture": "Оплата подтверждается",
+        "succeeded": "Оплата получена",
+        "canceled": "Оплата отменена",
+    }
 
     customer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -93,6 +103,11 @@ class Order(models.Model):
     )
     delivery_time = models.TimeField(
         verbose_name="Время доставки",
+    )
+    delivery_eta = models.CharField(
+        max_length=120,
+        blank=True,
+        verbose_name="Интервал доставки",
     )
     inscription = models.CharField(
         max_length=200,
@@ -209,3 +224,51 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Заказ #{self.pk} - {self.customer_name}"
+
+    def cake_name(self):
+        """Возвращает краткое название торта."""
+        if self.catalog_cake:
+            return self.catalog_cake.name
+
+        if self.level and self.shape:
+            return f"{self.level.name}, {self.shape.name}"
+
+        return "Торт не указан"
+
+    def status_text(self):
+        """Возвращает понятный статус заказа."""
+        return self.get_status_display()
+
+    def payment_status_text(self):
+        """Возвращает понятный статус оплаты."""
+        return self.PAYMENT_STATUS_LABELS.get(
+            self.payment_status,
+            "Статус оплаты уточняется",
+        )
+
+    def delivery_eta_text(self):
+        """Возвращает текст по сроку доставки."""
+        if self.delivery_eta:
+            return self.delivery_eta
+
+        if isinstance(self.delivery_date, str):
+            delivery_date_value = date.fromisoformat(self.delivery_date)
+        else:
+            delivery_date_value = self.delivery_date
+
+        if isinstance(self.delivery_time, str):
+            delivery_time_value = time.fromisoformat(self.delivery_time)
+        else:
+            delivery_time_value = self.delivery_time
+
+        if hasattr(delivery_date_value, "strftime"):
+            delivery_date = delivery_date_value.strftime("%d.%m.%Y")
+        else:
+            delivery_date = str(delivery_date_value)
+
+        if hasattr(delivery_time_value, "strftime"):
+            delivery_time = delivery_time_value.strftime("%H:%M")
+        else:
+            delivery_time = str(delivery_time_value)[:5]
+
+        return f"{delivery_date} к {delivery_time}"
