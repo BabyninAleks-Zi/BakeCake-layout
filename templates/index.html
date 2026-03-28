@@ -28,27 +28,27 @@
 
 		<div class="col-12 col-sm-6 col-lg-4 d-flex flex-column align-items-center">
 			<div class="card border-0 cake__hover">
-				<a href="#" class="card-img-overlay"></a>
+				<a href="{% url 'catalog:list' %}?occasion=tea" class="card-img-overlay"></a>
 				<img src="{% static 'img/image1.png' %}" alt="" class="">
 				<span class="cake_blue mt-4 fw-lighter mb-4 text-center">На чаепитие</span>
 			</div>
 		</div>
 		<div class="col-12 col-sm-6 col-lg-4 d-flex flex-column align-items-center">
 			<div class="card border-0 cake__hover">
-				<a href="#" class="card-img-overlay"></a>
+				<a href="{% url 'catalog:list' %}?occasion=birthday" class="card-img-overlay"></a>
 				<img src="{% static 'img/image2.png' %}" alt="" class="">
 				<span class="cake_blue mt-4 fw-lighter mb-4 text-center">На день рождения</span>
 			</div>
 		</div>
 		<div class="col-12 col-sm-6 col-lg-4 d-flex flex-column align-items-center">
 			<div class="card border-0 cake__hover">
-				<a href="#" class="card-img-overlay"></a>
+				<a href="{% url 'catalog:list' %}?occasion=wedding" class="card-img-overlay"></a>
 				<img src="{% static 'img/image3.png' %}" alt="" class="">
 				<span class="cake_blue mt-4 fw-lighter mb-4 text-center">На свадьбу</span>
 			</div>
 		</div>
 		<div class="d-flex justify-content-center mt-2">
-			<button class="btn text-white rounded-pill shadow-none cake__button cake__bg_pink">Открыть каталог</button>
+			<a href="{% url 'catalog:list' %}" class="btn text-white rounded-pill shadow-none cake__button cake__bg_pink">Открыть каталог</a>
 		</div>
 	</article>
 
@@ -177,6 +177,7 @@
 		<section class="row pt-header" id="step4" v-if="Designed">
 			<form id="order-form" class="d-none" method="post" action="{% url 'orders:create' %}">
 				{% csrf_token %}
+				<input :value="SelectedCatalogCake ? SelectedCatalogCake.id : ''" type="hidden" name="catalog_cake">
 				<input :value="Levels || ''" type="hidden" name="level">
 				<input :value="Form || ''" type="hidden" name="shape">
 				<input :value="Topping || ''" type="hidden" name="topping">
@@ -230,15 +231,23 @@
 						<div class="col-12 col-lg-4 d-flex justify-content-center justify-content-lg-end">
 							<div class="cake__card p-4 position-relative cake_grey">
 								<span class="cake__badge rounded-pill">?</span>
-								<span>Количество уровней: [[ DATA.Levels[Levels] || 'не выбрано' ]]</span>
-								<span>Форма уровней: [[ DATA.Forms[Form] || 'не выбрано' ]]</span>
-								<p>Топинг: [[ DATA.Toppings[Topping] || 'не выбрано' ]]</p>
-								<span>Дополнительно:</span>
-								<ul>
-									<li>Ягоды: [[ DATA.Berries[Berries] || 'нет' ]]</li>
-									<li>Декор: [[ DATA.Decors[Decor] || 'нет' ]]</li>
-								</ul>
-								<span>[[ Words === '' ? 'Без надписи' : Words ]]</span>
+								<template v-if="SelectedCatalogCake">
+									<span>Готовый торт: [[ SelectedCatalogCake.name ]]</span>
+									<span>Повод: [[ SelectedCatalogCake.occasion || 'без категории' ]]</span>
+									<p>Описание: [[ SelectedCatalogCake.description || 'Торт из каталога BakeCake.' ]]</p>
+									<span>Базовая цена: [[ BaseCost ]]₽</span>
+								</template>
+								<template v-else>
+									<span>Количество уровней: [[ DATA.Levels[Levels] || 'не выбрано' ]]</span>
+									<span>Форма уровней: [[ DATA.Forms[Form] || 'не выбрано' ]]</span>
+									<p>Топинг: [[ DATA.Toppings[Topping] || 'не выбрано' ]]</p>
+									<span>Дополнительно:</span>
+									<ul>
+										<li>Ягоды: [[ DATA.Berries[Berries] || 'нет' ]]</li>
+										<li>Декор: [[ DATA.Decors[Decor] || 'нет' ]]</li>
+									</ul>
+									<span>[[ Words === '' ? 'Без надписи' : Words ]]</span>
+								</template>
 							</div>
 						</div>
 					</div>
@@ -331,6 +340,7 @@
 {% block extra_scripts %}
 <script>
 	window.BUILDER_DATA = {{ builder_data_json|safe }};
+	window.SELECTED_CATALOG_CAKE = {{ selected_catalog_cake_json|safe }};
 </script>
 <script src="{% static 'js/index.js' %}"></script>
 <script src="{% static 'js/registration.js' %}"></script>

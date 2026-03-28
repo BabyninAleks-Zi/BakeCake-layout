@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from catalog.models import CakeOption
+from catalog.models import CakeOption, CatalogCake
 from orders.models import Order
 from orders.services import PricingError, calculate_custom_cake_price
 
@@ -90,6 +90,7 @@ class OrderCreateViewTests(TestCase):
         cls.topping = CakeOption.objects.get(kind=CakeOption.Kind.TOPPING, name="Белый соус")
         cls.berry = CakeOption.objects.get(kind=CakeOption.Kind.BERRY, name="Малина")
         cls.decor = CakeOption.objects.get(kind=CakeOption.Kind.DECOR, name="Марципан")
+        cls.catalog_cake = CatalogCake.objects.filter(is_active=True).first()
 
     @patch("orders.views.create_payment")
     def test_creates_order_and_redirects_to_payment(self, create_payment_mock):
@@ -159,6 +160,41 @@ class OrderCreateViewTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Order.objects.count(), 0)
         self.assertRedirects(response, reverse("core:index"))
+
+    @patch("orders.views.create_payment")
+    def test_creates_catalog_order_and_redirects_to_payment(self, create_payment_mock):
+        delivery_dt = timezone.localtime() + timedelta(days=2)
+        create_payment_mock.return_value = {
+            "payment_id": "pay_catalog",
+            "confirmation_url": "https://example.com/pay/catalog",
+            "status": "pending",
+        }
+
+        response = self.client.post(
+            reverse("orders:create"),
+            data={
+                "catalog_cake": self.catalog_cake.id,
+                "customer_name": "Анна",
+                "customer_phone": "+79991112233",
+                "customer_email": "anna@example.com",
+                "delivery_address": "Москва, Арбат 10",
+                "delivery_date": delivery_dt.date(),
+                "delivery_time": delivery_dt.time().replace(second=0, microsecond=0),
+                "delivery_comment": "Оставить у двери",
+                "personal_data_consent": "on",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        order = Order.objects.latest("id")
+        self.assertEqual(order.catalog_cake, self.catalog_cake)
+        self.assertIsNone(order.level)
+        self.assertEqual(order.total_price, self.catalog_cake.base_price)
+        self.assertRedirects(
+            response,
+            reverse("orders:payment_create"),
+            fetch_redirect_response=False,
+        )
 
     def test_reuses_existing_confirmation_url(self):
         order = Order.objects.create(

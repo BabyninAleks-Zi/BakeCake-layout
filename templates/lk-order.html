@@ -109,7 +109,12 @@
             {% endif %}
 
             <span class="ms-1 fs_14">
-              #{{ order.pk }} &mdash; {{ order.level.name }} ({{ order.shape.name }})
+              #{{ order.pk }} &mdash;
+              {% if order.catalog_cake %}
+                {{ order.catalog_cake.name }}
+              {% else %}
+                {{ order.level.name }} ({{ order.shape.name }})
+              {% endif %}
             </span>
           </span>
 
@@ -124,6 +129,13 @@
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                  {% if order.catalog_cake %}
+                    <span class="cake_blue d-block mb-1"><strong>Готовый торт:</strong> {{ order.catalog_cake.name }}</span>
+                    <span class="cake_blue d-block mb-1"><strong>Повод:</strong> {{ order.catalog_cake.occasion|default:"не указан" }}</span>
+                    {% if order.catalog_cake.description %}
+                      <span class="cake_blue d-block mb-1"><strong>Описание:</strong> {{ order.catalog_cake.description }}</span>
+                    {% endif %}
+                  {% else %}
                   <span class="cake_blue d-block mb-1"><strong>Уровней:</strong> {{ order.level.name }}</span>
                   <span class="cake_blue d-block mb-1"><strong>Форма:</strong> {{ order.shape.name }}</span>
                   <span class="cake_blue d-block mb-1"><strong>Топпинг:</strong> {{ order.topping.name }}</span>
@@ -144,6 +156,7 @@
                     <span class="cake_blue d-block mb-1"><strong>Надпись:</strong> "{{ order.inscription }}"</span>
                   {% else %}
                     <span class="cake_blue d-block mb-1"><strong>Надпись:</strong> без надписи</span>
+                  {% endif %}
                   {% endif %}
 
                   <hr class="my-3">

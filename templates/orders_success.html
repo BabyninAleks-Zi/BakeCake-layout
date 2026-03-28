@@ -9,6 +9,9 @@
             <h1 class="font_Gogh fs_40 cake_blue">Заказ оформлен</h1>
             <p class="cake_grey mt-3">Спасибо, мы получили ваш заказ.</p>
             <p class="cake_grey">Номер заказа: <span class="cake_pink">#{{ order.id }}</span></p>
+            {% if order.catalog_cake %}
+            <p class="cake_grey">Торт: <span class="cake_pink">{{ order.catalog_cake.name }}</span></p>
+            {% endif %}
             {% if order.is_paid %}
             <p class="cake_pink">Оплата получена.</p>
             {% elif order.payment_status %}

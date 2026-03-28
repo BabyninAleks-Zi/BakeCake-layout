@@ -10,6 +10,7 @@ from .models import Order
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
         "id",
+        "catalog_cake",
         "customer_name",
         "customer_phone",
         "delivery_date",
@@ -36,6 +37,7 @@ class OrderAdmin(admin.ModelAdmin):
         }),
         ("Параметры торта", {
             "fields": (
+                "catalog_cake",
                 "level",
                 "shape",
                 "topping",
@@ -101,6 +103,7 @@ class OrderAdmin(admin.ModelAdmin):
             "customer_name",
             "customer_phone",
             "customer_email",
+            "catalog_cake",
             "status",
             "payment_status",
             "is_paid",
@@ -124,6 +127,7 @@ class OrderAdmin(admin.ModelAdmin):
                 order.customer_name,
                 order.customer_phone,
                 order.customer_email,
+                order.catalog_cake.name if order.catalog_cake else "",
                 order.status,
                 order.payment_status,
                 order.is_paid,

@@ -1,6 +1,7 @@
 import json
 from django.shortcuts import render
-from catalog.models import CakeOption
+from django.shortcuts import get_object_or_404
+from catalog.models import CakeOption, CatalogCake
 from orders.services import INSCRIPTION_PRICE
 
 
@@ -18,6 +19,12 @@ BUILDER_OPTION_NAMES = {
     ],
     "berry": ["Ежевика", "Малина", "Голубика", "Клубника"],
     "decor": ["Фисташки", "Безе", "Фундук", "Пекан", "Маршмеллоу", "Марципан"],
+}
+
+CATALOG_OCCASION_LABELS = {
+    "tea": "На чаепитие",
+    "birthday": "На день рождения",
+    "wedding": "На свадьбу",
 }
 
 
@@ -41,6 +48,15 @@ def get_builder_options(kind):
 
 def index(request):
     """Показывает главную страницу с данными конструктора."""
+    selected_catalog_cake = None
+    selected_catalog_slug = request.GET.get("catalog_cake", "").strip()
+    if selected_catalog_slug:
+        selected_catalog_cake = get_object_or_404(
+            CatalogCake,
+            slug=selected_catalog_slug,
+            is_active=True,
+        )
+
     level_options = get_builder_options("level")
     shape_options = get_builder_options("shape")
     topping_options = get_builder_options("topping")
@@ -94,6 +110,19 @@ def index(request):
     context = {
         "builder_values": builder_values,
         "builder_data_json": json.dumps(builder_data, ensure_ascii=False),
+        "selected_catalog_cake_json": json.dumps(
+            {
+                "id": selected_catalog_cake.id,
+                "name": selected_catalog_cake.name,
+                "occasion": CATALOG_OCCASION_LABELS.get(
+                    selected_catalog_cake.occasion,
+                    selected_catalog_cake.occasion,
+                ),
+                "price": selected_catalog_cake.base_price,
+                "description": selected_catalog_cake.description,
+            } if selected_catalog_cake else None,
+            ensure_ascii=False,
+        ),
     }
     return render(request, "index.html", context)
 

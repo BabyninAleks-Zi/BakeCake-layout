@@ -1,6 +1,6 @@
 from django import forms
 
-from catalog.models import CakeOption
+from catalog.models import CakeOption, CatalogCake
 
 
 def get_option_queryset(kind):
@@ -11,10 +11,28 @@ def get_option_queryset(kind):
     ).order_by("sort_order", "id")
 
 
+def get_catalog_cake_queryset():
+    """Возвращает активные торты из каталога."""
+    return CatalogCake.objects.filter(is_active=True).order_by("sort_order", "id")
+
+
 class OrderCreateForm(forms.Form):
-    level = forms.ModelChoiceField(queryset=get_option_queryset(CakeOption.Kind.LEVEL))
-    shape = forms.ModelChoiceField(queryset=get_option_queryset(CakeOption.Kind.SHAPE))
-    topping = forms.ModelChoiceField(queryset=get_option_queryset(CakeOption.Kind.TOPPING))
+    catalog_cake = forms.ModelChoiceField(
+        queryset=get_catalog_cake_queryset(),
+        required=False,
+    )
+    level = forms.ModelChoiceField(
+        queryset=get_option_queryset(CakeOption.Kind.LEVEL),
+        required=False,
+    )
+    shape = forms.ModelChoiceField(
+        queryset=get_option_queryset(CakeOption.Kind.SHAPE),
+        required=False,
+    )
+    topping = forms.ModelChoiceField(
+        queryset=get_option_queryset(CakeOption.Kind.TOPPING),
+        required=False,
+    )
     berry = forms.ModelChoiceField(
         queryset=get_option_queryset(CakeOption.Kind.BERRY),
         required=False,
@@ -33,3 +51,22 @@ class OrderCreateForm(forms.Form):
     delivery_time = forms.TimeField()
     delivery_comment = forms.CharField(required=False)
     personal_data_consent = forms.BooleanField(required=True)
+
+    def clean(self):
+        """Проверяет, что выбран либо готовый торт, либо кастомный торт."""
+        cleaned_data = super().clean()
+
+        if cleaned_data.get("catalog_cake"):
+            return cleaned_data
+
+        required_fields = {
+            "level": "Выберите количество уровней.",
+            "shape": "Выберите форму торта.",
+            "topping": "Выберите топпинг.",
+        }
+
+        for field_name, error_text in required_fields.items():
+            if not cleaned_data.get(field_name):
+                self.add_error(field_name, error_text)
+
+        return cleaned_data

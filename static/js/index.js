@@ -1,4 +1,5 @@
 const builderData = window.BUILDER_DATA || {}
+const selectedCatalogCake = window.SELECTED_CATALOG_CAKE || null
 
 const builderApp = Vue.createApp({
     name: "App",
@@ -128,7 +129,8 @@ const builderApp = Vue.createApp({
             Decor: '',
             Words: '',
             Comments: '',
-            Designed: false,
+            Designed: Boolean(selectedCatalogCake),
+            SelectedCatalogCake: selectedCatalogCake,
 
             Name: '',
             Phone: null,
@@ -138,6 +140,16 @@ const builderApp = Vue.createApp({
             Time: null,
             DelivComments: '',
             PersonalDataConsent: false
+        }
+    },
+    mounted() {
+        if (this.SelectedCatalogCake) {
+            this.$nextTick(() => {
+                const checkoutSection = document.getElementById('step4')
+                if (checkoutSection) {
+                    checkoutSection.scrollIntoView({behavior: 'smooth'})
+                }
+            })
         }
     },
     methods: {
@@ -175,6 +187,10 @@ const builderApp = Vue.createApp({
     },
     computed: {
         BaseCost() {
+            if (this.SelectedCatalogCake) {
+                return Number(this.SelectedCatalogCake.price || 0)
+            }
+
             let inscriptionPrice = this.Words ? this.Costs.Words : 0
 
             return this.getOptionPrice('Levels', this.Levels) +

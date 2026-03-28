@@ -30,7 +30,7 @@
 					<a class="nav-link fw-lighter cake_blue" href="{% url 'core:index' %}#step3">Создать торт</a>
 				</li>
 				<li class="nav-item me-5">
-					<a class="nav-link fw-lighter cake_blue" href="{% url 'core:index' %}#step2">Каталог</a>
+					<a class="nav-link fw-lighter cake_blue" href="{% url 'catalog:list' %}">Каталог</a>
 				</li>
 				<li class="nav-item me-5">
 					<a class="nav-link fw-lighter cake_blue" href="{% url 'core:index' %}#step4">Оплата и доставка</a>
@@ -108,14 +108,14 @@
 				</div>
 			</div>
 			<div class="col-4 col-xl-2 d-flex flex-column">
-				<a href="#" class="text-decoration-none text-white">На свадьбу</a>
-				<a href="#" class="text-decoration-none text-white">На день рождения</a>
-				<a href="#" class="text-decoration-none text-white">На чаепитие</a>
+				<a href="{% url 'catalog:list' %}?occasion=wedding" class="text-decoration-none text-white">На свадьбу</a>
+				<a href="{% url 'catalog:list' %}?occasion=birthday" class="text-decoration-none text-white">На день рождения</a>
+				<a href="{% url 'catalog:list' %}?occasion=tea" class="text-decoration-none text-white">На чаепитие</a>
 			</div>
 			<div class="col-4 col-xl-2 d-flex flex-column">
-				<a href="#step3" class="text-decoration-none text-white">Создать торт</a>
-				<a href="#step2" class="text-decoration-none text-white">Каталог</a>
-				<a href="#Contacts" class="text-decoration-none text-white">Контакты</a>
+				<a href="{% url 'core:index' %}#step3" class="text-decoration-none text-white">Создать торт</a>
+				<a href="{% url 'catalog:list' %}" class="text-decoration-none text-white">Каталог</a>
+				<a href="{% url 'core:index' %}#Contacts" class="text-decoration-none text-white">Контакты</a>
 			</div>
 			<div class="col-12 col-xl-6 d-flex flex-column align-items-start align-items-xl-end mt-3 mt-xl-0">
 				<a href="https://vk.com/devmanorg"><img src="{% static 'img/vk.svg' %}" alt="VK" class="mb-3 mb-xl-5"></a>

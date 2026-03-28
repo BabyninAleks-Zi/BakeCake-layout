@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from catalog.models import CakeOption
+from catalog.models import CakeOption, CatalogCake
 
 
 class Order(models.Model):
@@ -20,11 +20,21 @@ class Order(models.Model):
         blank=True,
         verbose_name="Пользователь",
     )
+    catalog_cake = models.ForeignKey(
+        CatalogCake,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="orders",
+        verbose_name="Торт из каталога",
+    )
     level = models.ForeignKey(
         CakeOption,
         on_delete=models.PROTECT,
         related_name="level_orders",
         limit_choices_to={"kind": CakeOption.Kind.LEVEL},
+        null=True,
+        blank=True,
         verbose_name="Количество уровней",
     )
     shape = models.ForeignKey(
@@ -32,6 +42,8 @@ class Order(models.Model):
         on_delete=models.PROTECT,
         related_name="shape_orders",
         limit_choices_to={"kind": CakeOption.Kind.SHAPE},
+        null=True,
+        blank=True,
         verbose_name="Форма",
     )
     topping = models.ForeignKey(
@@ -39,6 +51,8 @@ class Order(models.Model):
         on_delete=models.PROTECT,
         related_name="topping_orders",
         limit_choices_to={"kind": CakeOption.Kind.TOPPING},
+        null=True,
+        blank=True,
         verbose_name="Топпинг",
     )
     berry = models.ForeignKey(
