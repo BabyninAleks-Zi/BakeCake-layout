@@ -9,6 +9,20 @@
             <h1 class="font_Gogh fs_40 cake_blue">Заказ оформлен</h1>
             <p class="cake_grey mt-3">Спасибо, мы получили ваш заказ.</p>
             <p class="cake_grey">Номер заказа: <span class="cake_pink">#{{ order.id }}</span></p>
+            {% if order.is_paid %}
+            <p class="cake_pink">Оплата получена.</p>
+            {% elif order.payment_status %}
+            <p class="cake_grey">Статус оплаты: <span class="cake_pink">{{ order.payment_status }}</span></p>
+            {% else %}
+            <p class="cake_grey">Заказ создан, оплата ещё не завершена.</p>
+            {% endif %}
+
+            {% if can_retry_payment %}
+            <a href="{% url 'orders:payment_create' %}" class="btn text-white rounded-pill mt-3 px-5 shadow-none cake__button cake__bg_pink">
+                Перейти к оплате
+            </a>
+            {% endif %}
+
             <a href="{% url 'core:index' %}" class="btn text-white rounded-pill mt-3 px-5 shadow-none cake__button cake__bg_pink">
                 Вернуться на главную
             </a>

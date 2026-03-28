@@ -121,7 +121,7 @@ def build_delivery_datetime(delivery_date, delivery_time):
     return timezone.localtime(combined)
 
 
-def create_payment(order: Order) -> dict:
+def create_payment(order: Order, return_url: str | None = None) -> dict:
     """Создаёт платёж в YooKassa для заказа."""
     from yookassa import Configuration, Payment
 
@@ -143,7 +143,7 @@ def create_payment(order: Order) -> dict:
         "description": description,
         "confirmation": {
             "type": "redirect",
-            "return_url": settings.YOOKASSA_RETURN_URL,
+            "return_url": return_url or settings.YOOKASSA_RETURN_URL,
         },
         "metadata": {
             "order_id": order.id,

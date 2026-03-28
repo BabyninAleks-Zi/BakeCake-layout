@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_GET, require_POST
@@ -6,6 +7,22 @@ from .forms import OrderCreateForm
 from .models import Order
 from .services import PricingError, PaymentError, calculate_custom_cake_price, \
     create_payment, get_payment_info, update_order_from_payment
+
+
+def build_payment_return_url(order_id):
+    """Собирает URL возврата после оплаты."""
+    separator = "&" if "?" in settings.YOOKASSA_RETURN_URL else "?"
+    return f"{settings.YOOKASSA_RETURN_URL}{separator}order_id={order_id}"
+
+
+def get_payment_order_id(request):
+    """Возвращает id заказа из сессии или query-параметра."""
+    return request.session.get("pending_order_id") or request.GET.get("order_id")
+
+
+def get_utm_data(request):
+    """Возвращает UTM-данные из сессии."""
+    return request.session.get("utm_data", {})
 
 
 @require_POST
@@ -18,6 +35,7 @@ def create_order(request):
         return redirect("core:index")
 
     cleaned = form.cleaned_data
+    utm_data = get_utm_data(request)
 
     try:
         pricing = calculate_custom_cake_price(
@@ -50,6 +68,13 @@ def create_order(request):
         inscription=cleaned["inscription"],
         order_comment=cleaned["order_comment"],
         delivery_comment=cleaned["delivery_comment"],
+        utm_source=utm_data.get("utm_source", ""),
+        utm_medium=utm_data.get("utm_medium", ""),
+        utm_campaign=utm_data.get("utm_campaign", ""),
+        utm_content=utm_data.get("utm_content", ""),
+        utm_term=utm_data.get("utm_term", ""),
+        referrer=utm_data.get("referrer", ""),
+        landing_path=utm_data.get("landing_path", ""),
         personal_data_consent=cleaned["personal_data_consent"],
         options_total=pricing["options_total"],
         inscription_price=pricing["inscription_price"],
@@ -65,13 +90,20 @@ def create_order(request):
 def order_success(request, order_id):
     """Показывает страницу успешного оформления заказа."""
     order = get_object_or_404(Order, id=order_id)
-    return render(request, "orders_success.html", {"order": order})
+    context = {
+        "order": order,
+        "can_retry_payment": (
+            not order.is_paid
+            and request.session.get("pending_order_id") == order.id
+        ),
+    }
+    return render(request, "orders_success.html", context)
 
 
 @require_GET
 def payment_create(request):
     """Создаёт платёж в YooKassa и перенаправляет на оплату."""
-    order_id = request.session.get("pending_order_id")
+    order_id = get_payment_order_id(request)
 
     if not order_id:
         messages.error(request, "Заказ не найден. Оформите заказ заново.")
@@ -80,11 +112,18 @@ def payment_create(request):
     order = get_object_or_404(Order, id=order_id)
 
     if order.is_paid:
-        del request.session["pending_order_id"]
+        if "pending_order_id" in request.session:
+            del request.session["pending_order_id"]
         return redirect("orders:success", order_id=order.id)
 
+    if order.payment_status in ("pending", "waiting_for_capture") and order.confirmation_url:
+        return redirect(order.confirmation_url)
+
     try:
-        payment_info = create_payment(order)
+        payment_info = create_payment(
+            order,
+            return_url=build_payment_return_url(order.id),
+        )
     except PaymentError as exc:
         messages.error(request, f"Ошибка оплаты: {exc}")
         return redirect("core:index")
@@ -95,7 +134,7 @@ def payment_create(request):
 @require_GET
 def payment_callback(request):
     """Обрабатывает возврат пользователя после оплаты."""
-    order_id = request.session.get("pending_order_id")
+    order_id = get_payment_order_id(request)
 
     if not order_id:
         messages.warning(request, "Заказ не найден в сессии.")
@@ -105,7 +144,8 @@ def payment_callback(request):
 
     if not order.payment_id:
         messages.error(request, "Платёж не найден.")
-        del request.session["pending_order_id"]
+        if "pending_order_id" in request.session:
+            del request.session["pending_order_id"]
         return redirect("orders:success", order_id=order.id)
 
     try:
@@ -115,10 +155,12 @@ def payment_callback(request):
         return redirect("orders:success", order_id=order.id)
 
     update_order_from_payment(order, payment_info)
-    del request.session["pending_order_id"]
 
     if order.is_paid:
+        if "pending_order_id" in request.session:
+            del request.session["pending_order_id"]
         return redirect("orders:success", order_id=order.id)
 
     messages.info(request, f"Платёж в обработке. Статус: {order.payment_status}")
+    request.session["pending_order_id"] = order.id
     return redirect("orders:success", order_id=order.id)

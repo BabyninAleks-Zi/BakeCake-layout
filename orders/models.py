@@ -93,6 +93,40 @@ class Order(models.Model):
         blank=True,
         verbose_name="Комментарий для курьера",
     )
+    utm_source = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="UTM source",
+    )
+    utm_medium = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="UTM medium",
+    )
+    utm_campaign = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name="UTM campaign",
+    )
+    utm_content = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name="UTM content",
+    )
+    utm_term = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name="UTM term",
+    )
+    referrer = models.URLField(
+        blank=True,
+        verbose_name="Источник перехода",
+    )
+    landing_path = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Страница входа",
+    )
     personal_data_consent = models.BooleanField(
         default=False,
         verbose_name="Согласие на обработку ПД",
