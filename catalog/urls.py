@@ -1,5 +1,9 @@
 from django.urls import path
 
-app_name = 'catalog'
+from .views import catalog_list
 
-urlpatterns = []
+app_name = "catalog"
+
+urlpatterns = [
+    path("", catalog_list, name="list"),
+]

@@ -133,3 +133,40 @@ li .cake__textinput:read-only {
 .z-index-1 {
     z-index: -1;
 }
+.catalog__card {
+    border: none;
+    border-radius: 18px;
+    background-color: white;
+    box-shadow: 0 12px 30px rgba(88, 130, 205, 0.12);
+    min-height: 100%;
+}
+.catalog__image_wrap {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 15px;
+    background-color: #F8FAFD;
+}
+.catalog__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.catalog__filter {
+    border: none;
+    box-shadow: none !important;
+}
+.catalog__filter_inactive {
+    background-color: #F6F8FC;
+}
+.catalog__footer {
+    border-top: 1px solid #EEF2F8;
+    padding-top: 16px;
+}
+.catalog__price {
+    font-size: 32px;
+    line-height: 1;
+}
+.catalog__order_button {
+    white-space: nowrap;
+}

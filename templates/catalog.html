@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Каталог тортов{% endblock %}
+
+{% block content %}
+<div class="container mt-header mb-5">
+    <section class="row pt-4">
+        <div class="col-12 text-center">
+            <h1 class="font_Gogh fs_40 cake_blue">Каталог готовых тортов</h1>
+            <p class="cake_grey mt-3">Выберите готовый торт или вернитесь к конструктору, если нужен индивидуальный заказ.</p>
+        </div>
+    </section>
+
+    <section class="row mt-4">
+        <div class="col-12 d-flex justify-content-center flex-wrap gap-2">
+            <a href="{% url 'catalog:list' %}" class="btn rounded-pill px-4 catalog__filter {% if not selected_occasion %}cake__bg_pink text-white{% else %}catalog__filter_inactive cake_blue{% endif %}">
+                Все
+            </a>
+            {% for occasion_key, occasion_label in occasion_labels.items %}
+            <a href="{% url 'catalog:list' %}?occasion={{ occasion_key }}" class="btn rounded-pill px-4 catalog__filter {% if selected_occasion == occasion_key %}cake__bg_pink text-white{% else %}catalog__filter_inactive cake_blue{% endif %}">
+                {{ occasion_label }}
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="row mt-5 g-4">
+        {% for cake in cakes %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <article class="catalog__card h-100 p-3 d-flex flex-column">
+                <div class="catalog__image_wrap">
+                    {% if cake.image %}
+                    <img src="{{ cake.image.url }}" alt="{{ cake.name }}" class="catalog__image">
+                    {% else %}
+                    <img src="{% static 'img/Cake.png' %}" alt="{{ cake.name }}" class="catalog__image">
+                    {% endif %}
+                </div>
+                <div class="pt-3 d-flex flex-column flex-grow-1">
+                    <span class="cake_pink fs_12">{{ cake.occasion_label }}</span>
+                    <h2 class="cake_blue mt-2">{{ cake.name }}</h2>
+                    <p class="cake_grey flex-grow-1 mt-2 mb-3">{{ cake.description|default:"Готовый торт для заказа с витрины." }}</p>
+                </div>
+                <div class="catalog__footer d-flex justify-content-between align-items-center gap-3 mt-3">
+                    <div class="d-flex flex-column">
+                        <span class="cake_grey fs_12">Цена</span>
+                        <span class="catalog__price cake_pink">{{ cake.base_price }} ₽</span>
+                    </div>
+                    <a href="{% url 'core:index' %}?catalog_cake={{ cake.slug }}#step4" class="btn text-white rounded-pill px-4 shadow-none cake__button cake__bg_pink catalog__order_button">
+                        Заказать
+                    </a>
+                </div>
+            </article>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center">
+            <p class="cake_grey">В этой категории пока нет тортов.</p>
+        </div>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}
