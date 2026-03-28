@@ -78,11 +78,11 @@
         {% if user.email %}
           <p class="cake_grey fs_14 mb-1">📧 {{ user.email }}</p>
         {% endif %}
-        {% if user.profile.phone %}
-          <p class="cake_grey fs_14 mb-1">📞 {{ user.profile.phone }}</p>
+        {% if profile.phone %}
+          <p class="cake_grey fs_14 mb-1">📞 {{ profile.phone }}</p>
         {% endif %}
-        {% if user.profile.address %}
-          <p class="cake_grey fs_14">📍 {{ user.profile.address }}</p>
+        {% if profile.address %}
+          <p class="cake_grey fs_14">📍 {{ profile.address }}</p>
         {% endif %}
       </div>
 
@@ -148,6 +148,7 @@
 
                   <hr class="my-3">
                   <span class="cake_pink fw-bold fs_18 d-block mb-2">Цена: {{ order.total_price }}₽</span>
+                  <span class="cake_blue d-block mb-2"><strong>Оплата:</strong> {{ order.payment_status|default:"не начата" }}</span>
                   
                   <small class="text-muted d-block mb-1">📅 Дата доставки: {{ order.delivery_date|date:"d.m.Y" }}</small>
                   <small class="text-muted d-block mb-1">⏰ Время: {{ order.delivery_time|date:"H:i" }}</small>

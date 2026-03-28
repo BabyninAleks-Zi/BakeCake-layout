@@ -80,7 +80,7 @@
                 data-user-name="{{ user.first_name|escapejs }}"
                 data-user-phone="{{ user.username|escapejs }}" 
                 data-user-email="{{ user.email|escapejs }}"
-                data-user-address="{{ user.profile.address|escapejs }}"
+                data-user-address="{{ profile.address|escapejs }}"
             >
 			<form class="d-none">
 				<input v-model="Name" name="NAME">

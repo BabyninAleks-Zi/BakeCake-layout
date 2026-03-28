@@ -14,6 +14,15 @@ from orders.models import Order
 User = get_user_model()
 
 
+def get_user_profile(user):
+    """Возвращает профиль пользователя."""
+    profile, _ = Profile.objects.get_or_create(
+        user=user,
+        defaults={"phone": user.username},
+    )
+    return profile
+
+
 @require_http_methods(["POST"])
 def send_code(request):
     """Принимает номер, создает код, возвращает успех"""
@@ -89,6 +98,16 @@ def custom_logout(request):
     return redirect('core:index')
 
 
+@login_required
+def lk_view(request):
+    """Показывает страницу личного кабинета."""
+    profile = get_user_profile(request.user)
+    context = {
+        "profile": profile,
+    }
+    return render(request, "lk.html", context)
+
+
 @require_http_methods(["POST"])
 def update_profile(request):
     if not request.user.is_authenticated:
@@ -135,14 +154,12 @@ def update_profile(request):
 
 @login_required
 def orders_view(request):
-    """
-    Страница списка заказов пользователя.
-    """
-    # Получаем все заказы текущего пользователя, сортируем от новых к старым
+    """Показывает список заказов пользователя."""
+    profile = get_user_profile(request.user)
     user_orders = Order.objects.filter(customer=request.user).order_by('-created_at')
-    
+
     context = {
         'orders': user_orders,
+        'profile': profile,
     }
     return render(request, 'lk-order.html', context)
-    

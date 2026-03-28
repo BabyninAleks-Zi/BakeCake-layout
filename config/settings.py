@@ -32,6 +32,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware', # Обязательно
+    'core.middleware.UtmMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware', # Обязательно
@@ -98,7 +99,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGOUT_REDIRECT_URL = 'core:index'
 
-LOGIN_URL = 'accounts:lk'
+LOGIN_URL = 'core:index'
 
 # YooKassa settings
 YOOKASSA_SHOP_ID = env.str('YOOKASSA_SHOP_ID')
