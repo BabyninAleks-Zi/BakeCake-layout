@@ -159,10 +159,22 @@ const builderApp = Vue.createApp({
 
             const normalizedPrice = Number(price)
             return Number.isNaN(normalizedPrice) ? 0 : normalizedPrice
+        },
+        getDeliveryDateTime() {
+            if (!this.Dates || !this.Time) {
+                return null
+            }
+
+            const deliveryDateTime = new Date(`${this.Dates}T${this.Time}`)
+            if (Number.isNaN(deliveryDateTime.getTime())) {
+                return null
+            }
+
+            return deliveryDateTime
         }
     },
     computed: {
-        Cost() {
+        BaseCost() {
             let inscriptionPrice = this.Words ? this.Costs.Words : 0
 
             return this.getOptionPrice('Levels', this.Levels) +
@@ -171,6 +183,29 @@ const builderApp = Vue.createApp({
                 this.getOptionPrice('Berries', this.Berries) +
                 this.getOptionPrice('Decors', this.Decor) +
                 Number(inscriptionPrice)
+        },
+        RushFee() {
+            const deliveryDateTime = this.getDeliveryDateTime()
+            if (!deliveryDateTime) {
+                return 0
+            }
+
+            const now = new Date()
+            const timeDiff = deliveryDateTime.getTime() - now.getTime()
+
+            if (timeDiff <= 0) {
+                return 0
+            }
+
+            const hours24 = 24 * 60 * 60 * 1000
+            if (timeDiff < hours24) {
+                return Math.floor(this.BaseCost * 20 / 100)
+            }
+
+            return 0
+        },
+        Cost() {
+            return this.BaseCost + this.RushFee
         }
     }
 })

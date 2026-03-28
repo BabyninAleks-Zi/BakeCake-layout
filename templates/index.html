@@ -283,6 +283,9 @@
 							<div class="d-flex">
 								<span class="cake_pink fs_40 fw-bold me-2">Итого: [[ Cost ]]₽</span>
 							</div>
+							<span v-if="RushFee > 0" class="cake_grey text-end">
+								Срочность: +[[ RushFee ]]₽
+							</span>
 							<button type="submit" class="btn btn_hover text-white rounded-pill mt-3 px-5 shadow-none cake__button cake__bg_pink">К оплате</button>
 						</div>
 					</div>
