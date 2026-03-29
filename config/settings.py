@@ -15,6 +15,11 @@ DEBUG = env.bool('DEBUG', True)
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
+SMS_API_KEY = env.str('SMS_API_KEY')
+SMS_SENDER = env.str('SMS_SENDER_NAME', 'CakeBake')
+TELEGRAM_BOT_TOKEN = env.str('TG_TOKEN')
+TELEGRAM_ADMIN_CHAT_ID = env.str('ADMIN_CHAT_ID')
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

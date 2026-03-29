@@ -23,6 +23,12 @@ class Profile(models.Model):
         default='',
         verbose_name="Адрес доставки"
     )
+    telegram_chat_id = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name='Telegram Chat ID'
+    )
 
     def __str__(self):
         return f"Профиль пользователя {self.user.username if self.user else 'Unknown'}"
