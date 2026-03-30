@@ -141,6 +141,10 @@ const builderApp = Vue.createApp({
             Time: null,
             DelivComments: reorderData ? reorderData.delivery_comment || '' : '',
             PromoCode: '',
+            PromoDiscount: 0,
+            PromoMessage: '',
+            PromoError: false,
+            PromoPreviewTimeout: null,
             PersonalDataConsent: false
         }
     },
@@ -164,6 +168,47 @@ const builderApp = Vue.createApp({
         },
         submitOrder() {
             document.getElementById('order-form').submit()
+        },
+        schedulePromoPreview() {
+            if (this.PromoPreviewTimeout) {
+                clearTimeout(this.PromoPreviewTimeout)
+            }
+
+            this.PromoPreviewTimeout = setTimeout(() => {
+                this.updatePromoPreview()
+            }, 300)
+        },
+        async updatePromoPreview() {
+            if (!this.PromoCode) {
+                this.PromoDiscount = 0
+                this.PromoMessage = ''
+                this.PromoError = false
+                return
+            }
+
+            try {
+                const params = new URLSearchParams({
+                    promo_code: this.PromoCode,
+                    subtotal: String(this.Cost),
+                })
+                const response = await fetch(`/orders/promo-preview/?${params.toString()}`)
+                const data = await response.json()
+
+                if (!response.ok || !data.ok) {
+                    this.PromoDiscount = 0
+                    this.PromoMessage = data.message || 'Промокод не найден.'
+                    this.PromoError = true
+                    return
+                }
+
+                this.PromoDiscount = Number(data.discount_amount || 0)
+                this.PromoMessage = data.message || ''
+                this.PromoError = false
+            } catch (error) {
+                this.PromoDiscount = 0
+                this.PromoMessage = 'Не удалось проверить промокод.'
+                this.PromoError = true
+            }
         },
         getOptionPrice(groupName, optionId) {
             const group = this.Costs[groupName] || {}
@@ -227,6 +272,19 @@ const builderApp = Vue.createApp({
         },
         Cost() {
             return this.BaseCost + this.RushFee
+        },
+        FinalCost() {
+            return this.Cost - this.PromoDiscount
+        }
+    },
+    watch: {
+        PromoCode() {
+            this.schedulePromoPreview()
+        },
+        Cost() {
+            if (this.PromoCode) {
+                this.updatePromoPreview()
+            }
         }
     }
 })

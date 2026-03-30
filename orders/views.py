@@ -1,6 +1,7 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from django.contrib import messages
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.db.models import Count, Sum
 from django.utils import timezone
@@ -9,7 +10,7 @@ from django.views.decorators.http import require_GET, require_POST
 from .forms import OrderComplaintForm, OrderCreateForm
 from .models import Order
 from .services import PricingError, PaymentError, calculate_custom_cake_price, calculate_discount_amount, calculate_rush_fee, \
-    create_payment, get_active_promo_code, get_payment_info, update_order_from_payment
+    create_payment, get_active_promo_code, get_payment_info, recalculate_order_pricing, update_order_from_payment
 
 
 def build_payment_return_url(order_id):
@@ -165,6 +166,12 @@ def payment_create(request):
             del request.session["pending_order_id"]
         return redirect("orders:success", order_id=order.id)
 
+    try:
+        order = recalculate_order_pricing(order)
+    except PricingError as exc:
+        messages.error(request, str(exc))
+        return redirect("orders:success", order_id=order.id)
+
     if order.payment_status in ("pending", "waiting_for_capture") and order.confirmation_url:
         return redirect(order.confirmation_url)
 
@@ -213,6 +220,50 @@ def payment_callback(request):
     messages.info(request, f"Платёж в обработке. Статус: {order.payment_status}")
     request.session["pending_order_id"] = order.id
     return redirect("orders:success", order_id=order.id)
+
+
+@require_GET
+def promo_preview(request):
+    """Возвращает предпросмотр скидки по промокоду."""
+    promo_code_text = request.GET.get("promo_code", "").strip()
+    subtotal_text = request.GET.get("subtotal", "0").strip()
+
+    if not promo_code_text:
+        return JsonResponse({
+            "ok": True,
+            "discount_amount": 0,
+            "total_amount": max(int(subtotal_text or 0), 0),
+            "message": "",
+        })
+
+    try:
+        subtotal = max(int(subtotal_text), 0)
+    except ValueError:
+        return JsonResponse({
+            "ok": False,
+            "discount_amount": 0,
+            "total_amount": 0,
+            "message": "Не удалось посчитать скидку.",
+        }, status=400)
+
+    try:
+        promo_code = get_active_promo_code(promo_code_text)
+    except PricingError as exc:
+        return JsonResponse({
+            "ok": False,
+            "discount_amount": 0,
+            "total_amount": subtotal,
+            "message": str(exc),
+        }, status=404)
+
+    discount_amount = calculate_discount_amount(subtotal, promo_code)
+
+    return JsonResponse({
+        "ok": True,
+        "discount_amount": discount_amount,
+        "total_amount": subtotal - discount_amount,
+        "message": f"Промокод {promo_code.code} применен.",
+    })
 
 
 @require_POST

@@ -258,6 +258,7 @@ class OrderCreateViewTests(TestCase):
         )
 
     def test_reuses_existing_confirmation_url(self):
+        delivery_dt = timezone.localtime() + timedelta(days=2)
         order = Order.objects.create(
             level=self.level,
             shape=self.shape,
@@ -268,8 +269,8 @@ class OrderCreateViewTests(TestCase):
             customer_phone="+79990000000",
             customer_email="irina@example.com",
             delivery_address="Москва, Тверская 1",
-            delivery_date="2026-03-30",
-            delivery_time="12:00",
+            delivery_date=delivery_dt.date(),
+            delivery_time=delivery_dt.time().replace(second=0, microsecond=0),
             personal_data_consent=True,
             options_total=1780,
             inscription_price=500,
@@ -491,3 +492,67 @@ class OrderCreateViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Отчет по заказам")
+
+    def test_promo_preview_returns_discount_amount(self):
+        response = self.client.get(
+            reverse("orders:promo_preview"),
+            {
+                "promo_code": self.promo_code.code,
+                "subtotal": 1200,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["discount_amount"], 300)
+        self.assertEqual(response.json()["total_amount"], 900)
+
+    def test_promo_preview_returns_error_for_unknown_code(self):
+        response = self.client.get(
+            reverse("orders:promo_preview"),
+            {
+                "promo_code": "UNKNOWN",
+                "subtotal": 1200,
+            },
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()["discount_amount"], 0)
+
+    @patch("orders.views.create_payment")
+    def test_payment_create_recalculates_total_with_rush_and_promo(self, create_payment_mock):
+        delivery_dt = timezone.localtime() + timedelta(hours=6)
+        order = Order.objects.create(
+            level=self.level,
+            shape=self.shape,
+            topping=self.topping,
+            customer_name="Ирина",
+            customer_phone="+79990000000",
+            customer_email="irina@example.com",
+            delivery_address="Москва, Тверская 1",
+            delivery_date=delivery_dt.date(),
+            delivery_time=delivery_dt.time().replace(second=0, microsecond=0),
+            promo_code=self.promo_code,
+            personal_data_consent=True,
+            options_total=1200,
+            inscription_price=0,
+            rush_fee=0,
+            discount_amount=0,
+            total_price=1200,
+        )
+        session = self.client.session
+        session["pending_order_id"] = order.id
+        session.save()
+        create_payment_mock.return_value = {
+            "payment_id": "pay_final",
+            "confirmation_url": "https://example.com/pay/final",
+            "status": "pending",
+        }
+
+        response = self.client.get(reverse("orders:payment_create"))
+
+        order.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(order.rush_fee, 240)
+        self.assertEqual(order.discount_amount, 300)
+        self.assertEqual(order.total_price, 1140)
+        self.assertEqual(create_payment_mock.call_args[0][0].total_price, 1140)
