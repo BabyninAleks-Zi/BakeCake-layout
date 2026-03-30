@@ -8,17 +8,18 @@ env.read_env()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env.str('SECRET_KEY')
+SECRET_KEY = env.str('SECRET_KEY', 'dev-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', True)
 
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
-SMS_API_KEY = env.str('SMS_API_KEY')
+SMS_API_KEY = env.str('SMS_API_KEY', '')
 SMS_SENDER = env.str('SMS_SENDER_NAME', 'CakeBake')
-TELEGRAM_BOT_TOKEN = env.str('TG_TOKEN')
-TELEGRAM_ADMIN_CHAT_ID = env.str('ADMIN_CHAT_ID')
+TELEGRAM_BOT_TOKEN = env.str('TG_TOKEN', '')
+TELEGRAM_ADMIN_CHAT_ID = env.str('ADMIN_CHAT_ID', '')
+JIVOSITE_WIDGET_ID = env.str('JIVOSITE_WIDGET_ID', '')
 
 # Application definition
 INSTALLED_APPS = [
@@ -57,6 +58,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth', # Нужно для user в шаблонах
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.project_settings',
             ],
         },
     },
@@ -107,6 +109,6 @@ LOGOUT_REDIRECT_URL = 'core:index'
 LOGIN_URL = 'core:index'
 
 # YooKassa settings
-YOOKASSA_SHOP_ID = env.str('YOOKASSA_SHOP_ID')
-YOOKASSA_SECRET_KEY = env.str('YOOKASSA_SECRET_KEY')
-YOOKASSA_RETURN_URL = env.str('YOOKASSA_RETURN_URL')
+YOOKASSA_SHOP_ID = env.str('YOOKASSA_SHOP_ID', '')
+YOOKASSA_SECRET_KEY = env.str('YOOKASSA_SECRET_KEY', '')
+YOOKASSA_RETURN_URL = env.str('YOOKASSA_RETURN_URL', 'http://127.0.0.1:8000/orders/payment/callback/')
