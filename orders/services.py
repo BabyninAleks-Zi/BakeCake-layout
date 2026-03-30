@@ -52,6 +52,52 @@ def calculate_discount_amount(subtotal: int, promo_code: PromoCode | None) -> in
     return discount
 
 
+def recalculate_order_pricing(order: Order) -> Order:
+    """Пересчитывает сумму заказа перед оплатой."""
+    if order.catalog_cake:
+        rush_fee = calculate_rush_fee(
+            subtotal=order.catalog_cake.base_price,
+            delivery_date=order.delivery_date,
+            delivery_time=order.delivery_time,
+        )
+        pricing = {
+            "options_total": order.catalog_cake.base_price,
+            "inscription_price": 0,
+            "rush_fee": rush_fee,
+            "total": order.catalog_cake.base_price + rush_fee,
+        }
+    else:
+        pricing = calculate_custom_cake_price(
+            level_id=order.level_id,
+            shape_id=order.shape_id,
+            topping_id=order.topping_id,
+            berry_id=order.berry_id,
+            decor_id=order.decor_id,
+            inscription=order.inscription,
+            delivery_date=order.delivery_date,
+            delivery_time=order.delivery_time,
+        )
+
+    discount_amount = calculate_discount_amount(pricing["total"], order.promo_code)
+
+    order.options_total = pricing["options_total"]
+    order.inscription_price = pricing["inscription_price"]
+    order.rush_fee = pricing["rush_fee"]
+    order.discount_amount = discount_amount
+    order.total_price = pricing["total"] - discount_amount
+    order.save(
+        update_fields=[
+            "options_total",
+            "inscription_price",
+            "rush_fee",
+            "discount_amount",
+            "total_price",
+            "updated_at",
+        ]
+    )
+    return order
+
+
 def calculate_custom_cake_price(
     *,
     level_id: int | None,
