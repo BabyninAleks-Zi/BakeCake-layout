@@ -13,7 +13,8 @@ SECRET_KEY = env.str('SECRET_KEY', 'dev-secret-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', True)
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ["127.0.0.1", "localhost"])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', [])
 
 SMS_API_KEY = env.str('SMS_API_KEY', '')
 SMS_SENDER = env.str('SMS_SENDER_NAME', 'CakeBake')
@@ -96,7 +97,7 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# STATIC_ROOT = BASE_DIR / 'staticfiles' 
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 
