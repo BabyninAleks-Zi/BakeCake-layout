@@ -2,6 +2,7 @@ import json
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from catalog.models import CakeOption, CatalogCake
+from orders.models import Order
 from orders.services import INSCRIPTION_PRICE
 
 
@@ -49,6 +50,7 @@ def get_builder_options(kind):
 def index(request):
     """Показывает главную страницу с данными конструктора."""
     selected_catalog_cake = None
+    reorder_data = None
     selected_catalog_slug = request.GET.get("catalog_cake", "").strip()
     if selected_catalog_slug:
         selected_catalog_cake = get_object_or_404(
@@ -56,6 +58,30 @@ def index(request):
             slug=selected_catalog_slug,
             is_active=True,
         )
+
+    repeat_order_id = request.GET.get("repeat_order", "").strip()
+    if repeat_order_id and request.user.is_authenticated:
+        repeat_order = get_object_or_404(
+            Order,
+            id=repeat_order_id,
+            customer=request.user,
+        )
+        selected_catalog_cake = repeat_order.catalog_cake or selected_catalog_cake
+        profile = getattr(request.user, "profile", None)
+        reorder_data = {
+            "level": repeat_order.level_id or "",
+            "shape": repeat_order.shape_id or "",
+            "topping": repeat_order.topping_id or "",
+            "berry": repeat_order.berry_id or "",
+            "decor": repeat_order.decor_id or "",
+            "inscription": repeat_order.inscription,
+            "order_comment": repeat_order.order_comment,
+            "customer_name": request.user.first_name or repeat_order.customer_name,
+            "customer_phone": getattr(profile, "phone", "") or repeat_order.customer_phone,
+            "customer_email": request.user.email or repeat_order.customer_email,
+            "delivery_address": getattr(profile, "address", "") or repeat_order.delivery_address,
+            "delivery_comment": repeat_order.delivery_comment,
+        }
 
     level_options = get_builder_options("level")
     shape_options = get_builder_options("shape")
@@ -123,6 +149,7 @@ def index(request):
             } if selected_catalog_cake else None,
             ensure_ascii=False,
         ),
+        "reorder_data_json": json.dumps(reorder_data, ensure_ascii=False),
     }
     return render(request, "index.html", context)
 

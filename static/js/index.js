@@ -1,5 +1,6 @@
 const builderData = window.BUILDER_DATA || {}
 const selectedCatalogCake = window.SELECTED_CATALOG_CAKE || null
+const reorderData = window.REORDER_DATA || null
 
 const builderApp = Vue.createApp({
     name: "App",
@@ -122,28 +123,29 @@ const builderApp = Vue.createApp({
                 Decors: {},
                 Words: 500
             },
-            Levels: '',
-            Form: '',
-            Topping: '',
-            Berries: '',
-            Decor: '',
-            Words: '',
-            Comments: '',
-            Designed: Boolean(selectedCatalogCake),
+            Levels: reorderData ? String(reorderData.level || '') : '',
+            Form: reorderData ? String(reorderData.shape || '') : '',
+            Topping: reorderData ? String(reorderData.topping || '') : '',
+            Berries: reorderData ? String(reorderData.berry || '') : '',
+            Decor: reorderData ? String(reorderData.decor || '') : '',
+            Words: reorderData ? reorderData.inscription || '' : '',
+            Comments: reorderData ? reorderData.order_comment || '' : '',
+            Designed: Boolean(selectedCatalogCake || reorderData),
             SelectedCatalogCake: selectedCatalogCake,
 
-            Name: '',
-            Phone: null,
-            Email: null,
-            Address: null,
+            Name: reorderData ? reorderData.customer_name || '' : '',
+            Phone: reorderData ? reorderData.customer_phone || null : null,
+            Email: reorderData ? reorderData.customer_email || null : null,
+            Address: reorderData ? reorderData.delivery_address || null : null,
             Dates: null,
             Time: null,
-            DelivComments: '',
+            DelivComments: reorderData ? reorderData.delivery_comment || '' : '',
+            PromoCode: '',
             PersonalDataConsent: false
         }
     },
     mounted() {
-        if (this.SelectedCatalogCake) {
+        if (this.Designed) {
             this.$nextTick(() => {
                 const checkoutSection = document.getElementById('step4')
                 if (checkoutSection) {
@@ -154,6 +156,9 @@ const builderApp = Vue.createApp({
     },
     methods: {
         ToStep4() {
+            if (this.Levels && this.Form && this.Topping) {
+                this.SelectedCatalogCake = null
+            }
             this.Designed = true
             setTimeout(() => this.$refs.ToStep4.click(), 0);
         },

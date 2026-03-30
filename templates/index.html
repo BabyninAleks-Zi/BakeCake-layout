@@ -193,6 +193,7 @@
 				<input v-model="Dates" type="hidden" name="delivery_date">
 				<input v-model="Time" type="hidden" name="delivery_time">
 				<input v-model="DelivComments" type="hidden" name="delivery_comment">
+				<input v-model="PromoCode" type="hidden" name="promo_code">
 				<input v-if="PersonalDataConsent" value="on" type="hidden" name="personal_data_consent">
 			</form>
 			<v-form :validation-schema="schema2" @submit="submitOrder">
@@ -276,6 +277,9 @@
 						<div class="col-12 col-md-6">
 							<label for="deliv-comment" class="cake_blue">Комментарий для курьера</label>
 							<textarea v-model="DelivComments" :class="DelivComments ? 'cake__border_blue': ''" id="deliv-comment" class="form-control cake__textinput mt-3" rows="2" style="resize: none"></textarea>
+							<label for="promo-code" class="cake_blue mt-3">Промокод</label>
+							<input v-model="PromoCode" :class="PromoCode ? 'cake__border_blue': ''" id="promo-code" type="text" class="form-control cake__textinput mt-3" placeholder="Введите промокод">
+							<small class="cake_grey d-block mt-2">Скидка применится после проверки на backend.</small>
 							<div class="form-check mt-3">
                                 <v-field v-model="PersonalDataConsent" name="personal_data_consent" id="personal_data_consent" class="form-check-input" type="checkbox" :value="true" :unchecked-value="false"></v-field>
                                 <label for="personal_data_consent" class="form-check-label cake_grey ms-2">
@@ -341,6 +345,7 @@
 <script>
 	window.BUILDER_DATA = {{ builder_data_json|safe }};
 	window.SELECTED_CATALOG_CAKE = {{ selected_catalog_cake_json|safe }};
+	window.REORDER_DATA = {{ reorder_data_json|safe }};
 </script>
 <script src="{% static 'js/index.js' %}"></script>
 <script src="{% static 'js/registration.js' %}"></script>

@@ -12,6 +12,12 @@
             {% if order.catalog_cake %}
             <p class="cake_grey">Торт: <span class="cake_pink">{{ order.catalog_cake.name }}</span></p>
             {% endif %}
+            {% if order.promo_code %}
+            <p class="cake_grey">Промокод: <span class="cake_pink">{{ order.promo_code.code }}</span></p>
+            {% endif %}
+            {% if order.discount_amount %}
+            <p class="cake_grey">Скидка: <span class="cake_pink">{{ order.discount_amount }} ₽</span></p>
+            {% endif %}
             <p class="cake_grey">Статус заказа: <span class="cake_pink">{{ order.status_text }}</span></p>
             <p class="cake_grey">ETA доставки: <span class="cake_pink">{{ order.delivery_eta_text }}</span></p>
             {% if order.is_paid %}

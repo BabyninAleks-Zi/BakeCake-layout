@@ -1,12 +1,15 @@
+from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
+from django.db.models import Count, Sum
+from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
-from .forms import OrderCreateForm
+from .forms import OrderComplaintForm, OrderCreateForm
 from .models import Order
-from .services import PricingError, PaymentError, calculate_custom_cake_price, calculate_rush_fee, \
-    create_payment, get_payment_info, update_order_from_payment
+from .services import PricingError, PaymentError, calculate_custom_cake_price, calculate_discount_amount, calculate_rush_fee, \
+    create_payment, get_active_promo_code, get_payment_info, update_order_from_payment
 
 
 def build_payment_return_url(order_id):
@@ -37,9 +40,17 @@ def create_order(request):
     cleaned = form.cleaned_data
     utm_data = get_utm_data(request)
     catalog_cake = cleaned["catalog_cake"]
+    promo_code_text = cleaned["promo_code"]
+
+    try:
+        promo_code = get_active_promo_code(promo_code_text)
+    except PricingError as exc:
+        messages.error(request, str(exc))
+        return redirect("core:index")
 
     order_data = {
         "catalog_cake": catalog_cake,
+        "promo_code": promo_code,
         "customer": request.user if request.user.is_authenticated else None,
         "berry": cleaned["berry"],
         "decor": cleaned["decor"],
@@ -105,11 +116,18 @@ def create_order(request):
         order_data["shape"] = cleaned["shape"]
         order_data["topping"] = cleaned["topping"]
 
+    discount_amount = calculate_discount_amount(
+        pricing["total"],
+        promo_code,
+    )
+    final_total = pricing["total"] - discount_amount
+
     order = Order.objects.create(
         options_total=pricing["options_total"],
         inscription_price=pricing["inscription_price"],
         rush_fee=pricing["rush_fee"],
-        total_price=pricing["total"],
+        discount_amount=discount_amount,
+        total_price=final_total,
         **order_data,
     )
 
@@ -195,3 +213,62 @@ def payment_callback(request):
     messages.info(request, f"Платёж в обработке. Статус: {order.payment_status}")
     request.session["pending_order_id"] = order.id
     return redirect("orders:success", order_id=order.id)
+
+
+@require_POST
+def create_complaint(request, order_id):
+    """Сохраняет жалобу пользователя по заказу."""
+    if not request.user.is_authenticated:
+        messages.error(request, "Нужно войти в личный кабинет.")
+        return redirect("core:index")
+
+    order = get_object_or_404(Order, id=order_id, customer=request.user)
+    form = OrderComplaintForm(request.POST)
+
+    if not form.is_valid():
+        messages.error(request, "Не удалось сохранить жалобу.")
+        return redirect("accounts:lk_orders")
+
+    if order.customer_complaint:
+        messages.info(request, "Жалоба по этому заказу уже сохранена.")
+        return redirect("accounts:lk_orders")
+
+    order.customer_complaint = form.cleaned_data["complaint"]
+    order.complaint_created_at = timezone.now()
+    order.save(update_fields=["customer_complaint", "complaint_created_at"])
+
+    messages.success(request, "Жалоба сохранена. Менеджер увидит её в админке.")
+    return redirect("accounts:lk_orders")
+
+
+@staff_member_required
+@require_GET
+def orders_report(request):
+    """Показывает простой отчёт по заказам и рекламе."""
+    by_source = list(
+        Order.objects.values("utm_source")
+        .annotate(
+            orders_count=Count("id"),
+            revenue=Sum("total_price"),
+        )
+        .order_by("-orders_count", "utm_source")
+    )
+    by_campaign = list(
+        Order.objects.values("utm_campaign")
+        .annotate(
+            orders_count=Count("id"),
+            revenue=Sum("total_price"),
+        )
+        .order_by("-orders_count", "utm_campaign")
+    )
+    totals = Order.objects.aggregate(
+        orders_count=Count("id"),
+        revenue=Sum("total_price"),
+    )
+
+    context = {
+        "totals": totals,
+        "by_source": by_source,
+        "by_campaign": by_campaign,
+    }
+    return render(request, "orders_report.html", context)

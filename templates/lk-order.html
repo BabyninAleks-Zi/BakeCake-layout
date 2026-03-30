@@ -161,8 +161,17 @@
 
                   <hr class="my-3">
                   <span class="cake_pink fw-bold fs_18 d-block mb-2">Цена: {{ order.total_price }}₽</span>
+                  {% if order.discount_amount %}
+                  <span class="cake_blue d-block mb-2"><strong>Скидка:</strong> {{ order.discount_amount }}₽</span>
+                  {% endif %}
+                  {% if order.promo_code %}
+                  <span class="cake_blue d-block mb-2"><strong>Промокод:</strong> {{ order.promo_code.code }}</span>
+                  {% endif %}
                   <span class="cake_blue d-block mb-2"><strong>Оплата:</strong> {{ order.payment_status_text }}</span>
                   <span class="cake_blue d-block mb-2"><strong>ETA доставки:</strong> {{ order.delivery_eta_text }}</span>
+                  {% if order.customer_complaint %}
+                  <span class="cake_blue d-block mb-2"><strong>Жалоба:</strong> {{ order.customer_complaint }}</span>
+                  {% endif %}
                   
                   <small class="text-muted d-block mb-1">📅 Дата доставки: {{ order.delivery_date|date:"d.m.Y" }}</small>
                   <small class="text-muted d-block mb-1">⏰ Время: {{ order.delivery_time|date:"H:i" }}</small>
@@ -172,6 +181,22 @@
                   <span class="cake_blue d-flex align-items-center">
                     Статус: <strong class="ms-1">{{ order.status_text }}</strong>
                   </span>
+                  <div class="d-flex flex-column align-items-end">
+                    {% if order.can_repeat %}
+                    <a href="{% url 'core:index' %}?repeat_order={{ order.id }}#step4" class="btn btn-sm text-white rounded-pill px-3 mb-2 shadow-none cake__button cake__bg_pink">
+                      Повторить
+                    </a>
+                    {% endif %}
+                    {% if order.can_complain %}
+                    <form method="post" action="{% url 'orders:complaint' order.id %}">
+                      {% csrf_token %}
+                      <textarea name="complaint" rows="2" class="form-control cake__textinput mb-2" placeholder="Опишите жалобу"></textarea>
+                      <button type="submit" class="btn btn-sm text-white rounded-pill px-3 shadow-none cake__button cake__bg_pink">
+                        Отправить жалобу
+                      </button>
+                    </form>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
             </div>

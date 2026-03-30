@@ -50,6 +50,7 @@ class OrderCreateForm(forms.Form):
     delivery_date = forms.DateField()
     delivery_time = forms.TimeField()
     delivery_comment = forms.CharField(required=False)
+    promo_code = forms.CharField(required=False, max_length=50)
     personal_data_consent = forms.BooleanField(required=True)
 
     def clean(self):
@@ -70,3 +71,7 @@ class OrderCreateForm(forms.Form):
                 self.add_error(field_name, error_text)
 
         return cleaned_data
+
+
+class OrderComplaintForm(forms.Form):
+    complaint = forms.CharField(max_length=1000)

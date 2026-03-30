@@ -4,10 +4,14 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib.auth import get_user_model
 
 from catalog.models import CakeOption, CatalogCake
-from orders.models import Order
+from orders.models import Order, PromoCode
 from orders.services import PricingError, calculate_custom_cake_price
+
+
+User = get_user_model()
 
 
 class PricingServiceTests(TestCase):
@@ -143,6 +147,11 @@ class OrderCreateViewTests(TestCase):
         cls.berry = CakeOption.objects.get(kind=CakeOption.Kind.BERRY, name="Малина")
         cls.decor = CakeOption.objects.get(kind=CakeOption.Kind.DECOR, name="Марципан")
         cls.catalog_cake = CatalogCake.objects.filter(is_active=True).first()
+        cls.promo_code = PromoCode.objects.create(
+            code="SALE300",
+            discount_type=PromoCode.DiscountType.FIXED,
+            discount_value=300,
+        )
 
     @patch("orders.views.create_payment")
     def test_creates_order_and_redirects_to_payment(self, create_payment_mock):
@@ -265,6 +274,7 @@ class OrderCreateViewTests(TestCase):
             options_total=1780,
             inscription_price=500,
             rush_fee=0,
+            discount_amount=0,
             total_price=2280,
             payment_id="pay_existing",
             payment_status="pending",
@@ -319,6 +329,38 @@ class OrderCreateViewTests(TestCase):
         self.assertEqual(order.referrer, "https://example.com/ad/")
         self.assertIn("utm_source=yandex", order.landing_path)
 
+    @patch("orders.views.create_payment")
+    def test_applies_promo_code_to_order_total(self, create_payment_mock):
+        delivery_dt = timezone.localtime() + timedelta(days=2)
+        create_payment_mock.return_value = {
+            "payment_id": "pay_discount",
+            "confirmation_url": "https://example.com/pay/discount",
+            "status": "pending",
+        }
+
+        response = self.client.post(
+            reverse("orders:create"),
+            data={
+                "level": self.level.id,
+                "shape": self.shape.id,
+                "topping": self.topping.id,
+                "customer_name": "Ирина",
+                "customer_phone": "+79990000000",
+                "customer_email": "irina@example.com",
+                "delivery_address": "Москва, Тверская 1",
+                "delivery_date": delivery_dt.date(),
+                "delivery_time": delivery_dt.time().replace(second=0, microsecond=0),
+                "promo_code": self.promo_code.code,
+                "personal_data_consent": "on",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        order = Order.objects.latest("id")
+        self.assertEqual(order.discount_amount, 300)
+        self.assertEqual(order.total_price, 900)
+        self.assertEqual(order.promo_code, self.promo_code)
+
     @patch("orders.views.get_payment_info")
     def test_callback_marks_order_as_paid_by_order_id(self, get_payment_info_mock):
         order = Order.objects.create(
@@ -335,6 +377,7 @@ class OrderCreateViewTests(TestCase):
             options_total=1200,
             inscription_price=0,
             rush_fee=0,
+            discount_amount=0,
             total_price=1200,
             payment_id="pay_123",
             payment_status="pending",
@@ -376,6 +419,7 @@ class OrderCreateViewTests(TestCase):
             options_total=1200,
             inscription_price=0,
             rush_fee=0,
+            discount_amount=0,
             total_price=1200,
             payment_id="pay_124",
             payment_status="pending",
@@ -401,3 +445,49 @@ class OrderCreateViewTests(TestCase):
             reverse("orders:success", kwargs={"order_id": order.id}),
             fetch_redirect_response=False,
         )
+
+    def test_authenticated_user_can_leave_complaint(self):
+        user = User.objects.create_user(username="+79990000000", password="pass")
+        self.client.force_login(user)
+        order = Order.objects.create(
+            customer=user,
+            level=self.level,
+            shape=self.shape,
+            topping=self.topping,
+            customer_name="Ирина",
+            customer_phone="+79990000000",
+            customer_email="irina@example.com",
+            delivery_address="Москва, Тверская 1",
+            delivery_date="2026-03-30",
+            delivery_time="12:00",
+            personal_data_consent=True,
+            options_total=1200,
+            inscription_price=0,
+            rush_fee=0,
+            discount_amount=0,
+            total_price=1200,
+        )
+
+        response = self.client.post(
+            reverse("orders:complaint", kwargs={"order_id": order.id}),
+            {"complaint": "Курьер опаздывает"},
+        )
+
+        order.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(order.customer_complaint, "Курьер опаздывает")
+        self.assertIsNotNone(order.complaint_created_at)
+
+    def test_staff_can_open_orders_report(self):
+        staff_user = User.objects.create_user(
+            username="+79990000001",
+            password="pass",
+            is_staff=True,
+            is_superuser=True,
+        )
+        self.client.force_login(staff_user)
+
+        response = self.client.get(reverse("orders:report"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Отчет по заказам")

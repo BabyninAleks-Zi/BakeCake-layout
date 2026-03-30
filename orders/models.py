@@ -6,6 +6,43 @@ from django.db import models
 from catalog.models import CakeOption, CatalogCake
 
 
+class PromoCode(models.Model):
+    class DiscountType(models.TextChoices):
+        FIXED = "fixed", "Фиксированная скидка"
+        PERCENT = "percent", "Скидка в процентах"
+
+    code = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name="Промокод",
+    )
+    discount_type = models.CharField(
+        max_length=20,
+        choices=DiscountType.choices,
+        default=DiscountType.FIXED,
+        verbose_name="Тип скидки",
+    )
+    discount_value = models.PositiveIntegerField(
+        verbose_name="Размер скидки",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Активен",
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Создан",
+    )
+
+    class Meta:
+        verbose_name = "Промокод"
+        verbose_name_plural = "Промокоды"
+        ordering = ("code",)
+
+    def __str__(self):
+        return self.code
+
+
 class Order(models.Model):
     class Status(models.TextChoices):
         NEW = "new", "Новый"
@@ -29,6 +66,14 @@ class Order(models.Model):
         null=True,
         blank=True,
         verbose_name="Пользователь",
+    )
+    promo_code = models.ForeignKey(
+        PromoCode,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders",
+        verbose_name="Промокод",
     )
     catalog_cake = models.ForeignKey(
         CatalogCake,
@@ -172,6 +217,10 @@ class Order(models.Model):
         default=0,
         verbose_name="Наценка за срочность",
     )
+    discount_amount = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Сумма скидки",
+    )
     total_price = models.PositiveIntegerField(
         default=0,
         verbose_name="Итоговая стоимость",
@@ -207,6 +256,15 @@ class Order(models.Model):
         blank=True,
         null=True,
         verbose_name="Ссылка на оплату",
+    )
+    customer_complaint = models.TextField(
+        blank=True,
+        verbose_name="Жалоба клиента",
+    )
+    complaint_created_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name="Жалоба создана",
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -272,3 +330,11 @@ class Order(models.Model):
             delivery_time = str(delivery_time_value)[:5]
 
         return f"{delivery_date} к {delivery_time}"
+
+    def can_repeat(self):
+        """Показывает, можно ли повторить заказ."""
+        return bool(self.catalog_cake or (self.level and self.shape and self.topping))
+
+    def can_complain(self):
+        """Показывает, можно ли оставить жалобу по заказу."""
+        return not bool(self.customer_complaint)

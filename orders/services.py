@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from django.conf import settings
 from catalog.models import CakeOption
-from .models import Order
+from .models import Order, PromoCode
 
 
 INSCRIPTION_PRICE = 500
@@ -22,6 +22,34 @@ class PricingError(ValueError):
 
 class PaymentError(ValueError):
     pass
+
+
+def get_active_promo_code(code: str):
+    """Возвращает активный промокод по строке."""
+    normalized_code = code.strip().upper()
+    if not normalized_code:
+        return None
+
+    try:
+        return PromoCode.objects.get(code=normalized_code, is_active=True)
+    except PromoCode.DoesNotExist as exc:
+        raise PricingError("Промокод не найден или отключен") from exc
+
+
+def calculate_discount_amount(subtotal: int, promo_code: PromoCode | None) -> int:
+    """Считает скидку по промокоду."""
+    if not promo_code:
+        return 0
+
+    if promo_code.discount_type == PromoCode.DiscountType.PERCENT:
+        discount = subtotal * promo_code.discount_value // 100
+    else:
+        discount = promo_code.discount_value
+
+    if discount > subtotal:
+        return subtotal
+
+    return discount
 
 
 def calculate_custom_cake_price(

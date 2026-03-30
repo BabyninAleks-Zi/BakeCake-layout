@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Отчет по заказам{% endblock %}
+
+{% block content %}
+<div class="container mt-header mb-5">
+    <h1 class="font_Gogh fs_40 cake_blue mb-4">Отчет по заказам</h1>
+
+    <div class="row g-4 mb-5">
+        <div class="col-12 col-md-6">
+            <div class="cake__card p-4">
+                <span class="cake_blue d-block">Всего заказов</span>
+                <span class="cake_pink fs_40">{{ totals.orders_count|default:0 }}</span>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="cake__card p-4">
+                <span class="cake_blue d-block">Сумма заказов</span>
+                <span class="cake_pink fs_40">{{ totals.revenue|default:0 }} ₽</span>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="cake_blue mb-3">По источникам</h2>
+    <div class="table-responsive mb-5">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Источник</th>
+                    <th>Заказов</th>
+                    <th>Сумма</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in by_source %}
+                <tr>
+                    <td>{{ item.utm_source|default:"Без источника" }}</td>
+                    <td>{{ item.orders_count }}</td>
+                    <td>{{ item.revenue|default:0 }} ₽</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">Данных пока нет.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="cake_blue mb-3">По кампаниям</h2>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Кампания</th>
+                    <th>Заказов</th>
+                    <th>Сумма</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in by_campaign %}
+                <tr>
+                    <td>{{ item.utm_campaign|default:"Без кампании" }}</td>
+                    <td>{{ item.orders_count }}</td>
+                    <td>{{ item.revenue|default:0 }} ₽</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">Данных пока нет.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
