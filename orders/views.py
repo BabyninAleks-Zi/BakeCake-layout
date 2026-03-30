@@ -7,6 +7,7 @@ from django.db.models import Count, Sum
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST
 
+from accounts.models import Profile
 from .forms import OrderComplaintForm, OrderCreateForm
 from .models import Order
 from .services import PricingError, PaymentError, calculate_custom_cake_price, calculate_discount_amount, calculate_rush_fee, \
@@ -27,6 +28,59 @@ def get_payment_order_id(request):
 def get_utm_data(request):
     """Возвращает UTM-данные из сессии."""
     return request.session.get("utm_data", {})
+
+
+def sync_user_profile_from_checkout(user, cleaned_data):
+    """Сохраняет данные из checkout в профиль пользователя."""
+    if not user or not user.is_authenticated:
+        return
+
+    user_changed = False
+    profile, _ = Profile.objects.get_or_create(
+        user=user,
+        defaults={"phone": user.username},
+    )
+
+    customer_name = cleaned_data.get("customer_name", "").strip()
+    customer_email = cleaned_data.get("customer_email", "").strip()
+    delivery_address = cleaned_data.get("delivery_address", "").strip()
+
+    if customer_name and user.first_name != customer_name:
+        user.first_name = customer_name
+        user_changed = True
+
+    if customer_email and user.email != customer_email:
+        user.email = customer_email
+        user_changed = True
+
+    if user_changed:
+        user.save(update_fields=["first_name", "email"])
+
+    if delivery_address and profile.address != delivery_address:
+        profile.address = delivery_address
+        profile.save(update_fields=["address"])
+
+
+def payment_amount_matches_order(order):
+    """Проверяет, совпадает ли сумма платежа с суммой заказа."""
+    if not order.payment_id:
+        return False
+
+    try:
+        payment_info = get_payment_info(order.payment_id)
+    except PaymentError:
+        return False
+
+    amount_text = payment_info.get("amount")
+    if amount_text is None:
+        return False
+
+    try:
+        payment_amount = int(float(amount_text))
+    except (TypeError, ValueError):
+        return False
+
+    return payment_amount == order.total_price
 
 
 @require_POST
@@ -123,6 +177,8 @@ def create_order(request):
     )
     final_total = pricing["total"] - discount_amount
 
+    sync_user_profile_from_checkout(request.user, cleaned)
+
     order = Order.objects.create(
         options_total=pricing["options_total"],
         inscription_price=pricing["inscription_price"],
@@ -171,6 +227,15 @@ def payment_create(request):
     except PricingError as exc:
         messages.error(request, str(exc))
         return redirect("orders:success", order_id=order.id)
+
+    if order.payment_status in ("pending", "waiting_for_capture") and order.confirmation_url:
+        if payment_amount_matches_order(order):
+            return redirect(order.confirmation_url)
+
+        order.payment_id = None
+        order.payment_status = ""
+        order.confirmation_url = ""
+        order.save(update_fields=["payment_id", "payment_status", "confirmation_url", "updated_at"])
 
     if order.payment_status in ("pending", "waiting_for_capture") and order.confirmation_url:
         return redirect(order.confirmation_url)

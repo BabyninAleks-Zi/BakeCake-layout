@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 
+from accounts.models import Profile
 from catalog.models import CakeOption, CatalogCake
 from orders.models import Order, PromoCode
 from orders.services import PricingError, calculate_custom_cake_price
@@ -257,7 +258,8 @@ class OrderCreateViewTests(TestCase):
             fetch_redirect_response=False,
         )
 
-    def test_reuses_existing_confirmation_url(self):
+    @patch("orders.views.get_payment_info")
+    def test_reuses_existing_confirmation_url(self, get_payment_info_mock):
         delivery_dt = timezone.localtime() + timedelta(days=2)
         order = Order.objects.create(
             level=self.level,
@@ -273,10 +275,10 @@ class OrderCreateViewTests(TestCase):
             delivery_time=delivery_dt.time().replace(second=0, microsecond=0),
             personal_data_consent=True,
             options_total=1780,
-            inscription_price=500,
+            inscription_price=0,
             rush_fee=0,
             discount_amount=0,
-            total_price=2280,
+            total_price=1780,
             payment_id="pay_existing",
             payment_status="pending",
             confirmation_url="https://example.com/pay/existing",
@@ -284,6 +286,12 @@ class OrderCreateViewTests(TestCase):
         session = self.client.session
         session["pending_order_id"] = order.id
         session.save()
+        get_payment_info_mock.return_value = {
+            "id": "pay_existing",
+            "status": "pending",
+            "paid": False,
+            "amount": "1780.00",
+        }
 
         response = self.client.get(reverse("orders:payment_create"))
 
@@ -518,6 +526,41 @@ class OrderCreateViewTests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()["discount_amount"], 0)
 
+    def test_authenticated_user_checkout_updates_profile_data(self):
+        user = User.objects.create_user(
+            username="+79990000077",
+            password="pass",
+            first_name="",
+            email="",
+        )
+        Profile.objects.create(user=user, phone=user.username, address="")
+        self.client.force_login(user)
+        delivery_dt = timezone.localtime() + timedelta(days=2)
+
+        response = self.client.post(
+            reverse("orders:create"),
+            data={
+                "level": self.level.id,
+                "shape": self.shape.id,
+                "topping": self.topping.id,
+                "customer_name": "Мария",
+                "customer_phone": user.username,
+                "customer_email": "maria@example.com",
+                "delivery_address": "Москва, Пушкина 10",
+                "delivery_date": delivery_dt.date(),
+                "delivery_time": delivery_dt.time().replace(second=0, microsecond=0),
+                "personal_data_consent": "on",
+            },
+        )
+
+        user.refresh_from_db()
+        profile = Profile.objects.get(user=user)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(user.first_name, "Мария")
+        self.assertEqual(user.email, "maria@example.com")
+        self.assertEqual(profile.address, "Москва, Пушкина 10")
+
     @patch("orders.views.create_payment")
     def test_payment_create_recalculates_total_with_rush_and_promo(self, create_payment_mock):
         delivery_dt = timezone.localtime() + timedelta(hours=6)
@@ -556,3 +599,52 @@ class OrderCreateViewTests(TestCase):
         self.assertEqual(order.discount_amount, 300)
         self.assertEqual(order.total_price, 1140)
         self.assertEqual(create_payment_mock.call_args[0][0].total_price, 1140)
+
+    @patch("orders.views.create_payment")
+    @patch("orders.views.get_payment_info")
+    def test_payment_create_replaces_old_payment_link_when_amount_changed(self, get_payment_info_mock, create_payment_mock):
+        delivery_dt = timezone.localtime() + timedelta(hours=6)
+        order = Order.objects.create(
+            level=self.level,
+            shape=self.shape,
+            topping=self.topping,
+            customer_name="Ирина",
+            customer_phone="+79990000000",
+            customer_email="irina@example.com",
+            delivery_address="Москва, Тверская 1",
+            delivery_date=delivery_dt.date(),
+            delivery_time=delivery_dt.time().replace(second=0, microsecond=0),
+            promo_code=self.promo_code,
+            personal_data_consent=True,
+            options_total=1200,
+            inscription_price=0,
+            rush_fee=0,
+            discount_amount=0,
+            total_price=1200,
+            payment_id="old_payment",
+            payment_status="pending",
+            confirmation_url="https://example.com/pay/old",
+        )
+        session = self.client.session
+        session["pending_order_id"] = order.id
+        session.save()
+        get_payment_info_mock.return_value = {
+            "id": "old_payment",
+            "status": "pending",
+            "paid": False,
+            "amount": "1200.00",
+        }
+        create_payment_mock.return_value = {
+            "payment_id": "new_payment",
+            "confirmation_url": "https://example.com/pay/new",
+            "status": "pending",
+        }
+
+        response = self.client.get(reverse("orders:payment_create"))
+
+        order.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, "https://example.com/pay/new", fetch_redirect_response=False)
+        self.assertEqual(order.total_price, 1140)
+        self.assertIsNone(order.payment_id)
+        self.assertEqual(order.payment_status, "")
